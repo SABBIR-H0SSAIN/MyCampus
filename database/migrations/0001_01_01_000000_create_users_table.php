@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('batch');
             $table->string('gender');
             $table->string('phone')->nullable();
+            $table->string('role')->default('student');
             $table->string('registration_status')->default('pending');
             $table->string('student_id_card_path');
             $table->string('rejection_reason')->nullable();

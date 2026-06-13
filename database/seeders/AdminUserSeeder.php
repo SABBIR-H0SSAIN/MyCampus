@@ -25,13 +25,12 @@ class AdminUserSeeder extends Seeder
                 'batch' => 2020,
                 'gender' => 'male',
                 'phone' => null,
+                'role' => 'admin',
                 'registration_status' => RegistrationStatus::Approved,
                 'student_id_card_path' => 'id-cards/admin-placeholder.jpg',
                 'approved_at' => now(),
             ]
         );
-
-        $admin->assignRole('admin');
 
         // Create profile for admin
         $admin->profile()->firstOrCreate();

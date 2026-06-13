@@ -17,12 +17,12 @@ class UserController extends Controller
      */
     public function show(Request $request): JsonResponse
     {
-        $user = $request->user()->load('profile', 'roles', 'permissions');
+        $user = $request->user()->load('profile');
 
         return response()->json([
             'user' => $user,
-            'roles' => $user->getRoleNames(),
-            'permissions' => $user->getAllPermissions()->pluck('name'),
+            'roles' => [$user->role],
+            'permissions' => [],
         ]);
     }
 }

@@ -11,16 +11,15 @@ type User = {
   batch?: number;
   gender?: string;
   phone?: string;
-  roles?: string[];
+  role: string;
 };
 
 type AuthContextType = {
   user: User | null;
-  roles: string[];
-  permissions: string[];
+  role: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (token: string, user: User, roles: string[]) => void;
+  login: (token: string, user: User) => void;
   logout: () => void;
 };
 
@@ -28,20 +27,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [roles, setRoles] = useState<string[]>([]);
-  const [permissions, setPermissions] = useState<string[]>([]);
+  const [role, setRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchUser = async () => {
     try {
       const response = await api.get('/api/auth/user');
       setUser(response.data.user);
-      setRoles(response.data.roles);
-      setPermissions(response.data.permissions);
+      setRole(response.data.user.role);
     } catch (error) {
       setUser(null);
-      setRoles([]);
-      setPermissions([]);
+      setRole(null);
       localStorage.removeItem('auth_token');
     } finally {
       setIsLoading(false);
@@ -58,18 +54,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const handleUnauthorized = () => {
       setUser(null);
-      setRoles([]);
-      setPermissions([]);
+      setRole(null);
     };
 
     window.addEventListener('auth:unauthorized', handleUnauthorized);
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, []);
 
-  const login = (token: string, user: User, roles: string[]) => {
+  const login = (token: string, user: User) => {
     localStorage.setItem('auth_token', token);
     setUser(user);
-    setRoles(roles);
+    setRole(user.role);
   };
 
   const logout = async () => {
@@ -80,8 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       localStorage.removeItem('auth_token');
       setUser(null);
-      setRoles([]);
-      setPermissions([]);
+      setRole(null);
       window.location.href = '/login';
     }
   };
@@ -90,8 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        roles,
-        permissions,
+        role,
         isAuthenticated: !!user,
         isLoading,
         login,

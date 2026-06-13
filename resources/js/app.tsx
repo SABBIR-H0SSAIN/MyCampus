@@ -46,7 +46,7 @@ function App() {
             
             {/* General App Routes */}
             <Route path="/pending-approval" element={<PendingApproval />} />
-            <Route path="/app" element={<ProtectedRoute />}>
+            <Route path="/app" element={<ProtectedRoute requireRole="student" />}>
               <Route element={<AppLayout />}>
                 <Route index element={<AppDashboard />} />
                 <Route path="marketplace" element={<Marketplace />} />

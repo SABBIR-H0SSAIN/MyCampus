@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,12 +9,22 @@ import { ArrowRight, ShieldAlert } from "lucide-react";
 export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, isAuthenticated, role } = useAuth();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/app", { replace: true });
+      }
+    }
+  }, [isAuthenticated, role, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,10 +38,9 @@ export default function AdminLogin() {
       const response = await api.post('/api/auth/login', { email, password });
       
       const { token, user } = response.data;
-      const roles = user.roles ? user.roles.map((r: any) => r.name) : [];
       
-      if (!roles.includes("admin")) {
-        // Log them out immediately if they are not an admin
+      if (user.role !== "admin") {
+        // Log them out immediately if they do not have admin privileges
         await api.post('/api/auth/logout', {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -39,7 +48,7 @@ export default function AdminLogin() {
         return;
       }
       
-      login(token, user, roles);
+      login(token, user);
       
       const from = location.state?.from?.pathname || "/admin";
       navigate(from, { replace: true });

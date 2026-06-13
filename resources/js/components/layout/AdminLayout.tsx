@@ -56,9 +56,9 @@ export function AdminLayout() {
   return (
     <div className="min-h-dvh bg-sidebar text-sidebar-foreground">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
-        <div className="flex h-16 items-center gap-2 px-6 border-b border-sidebar-border">
-          <Logo />
-          <span className="ml-1 rounded bg-sidebar-accent px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-sidebar-primary">Admin</span>
+        <div className="flex h-16 items-center gap-2 px-5 border-b border-sidebar-border">
+          <Logo size="md" />
+          <span className="rounded bg-sidebar-accent px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-sidebar-primary shrink-0">Admin</span>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
           {nav.map((n) => <NavItem key={n.to} {...n} />)}
@@ -78,8 +78,8 @@ export function AdminLayout() {
 
       <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar/90 px-4 backdrop-blur lg:pl-72 lg:pr-8">
         <div className="flex items-center gap-2 lg:hidden">
-          <Logo mark />
-          <span className="rounded bg-sidebar-accent px-1.5 py-0.5 font-mono text-[10px] font-bold text-sidebar-primary">ADMIN</span>
+          <Logo mark size="md" />
+          <span className="rounded bg-sidebar-accent px-1.5 py-0.5 font-mono text-[10px] font-bold text-sidebar-primary shrink-0">ADMIN</span>
         </div>
         <div className="flex items-center gap-2 lg:flex" />
         <div className="flex items-center gap-2">

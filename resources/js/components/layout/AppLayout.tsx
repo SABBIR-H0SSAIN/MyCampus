@@ -66,7 +66,7 @@ export function AppLayout() {
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border bg-surface lg:flex">
         <div className="flex h-16 items-center px-6 border-b border-border">
-          <Link to="/app"><Logo /></Link>
+          <Link to="/app"><Logo size="md" /></Link>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
           <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">Workspace</p>
@@ -106,7 +106,7 @@ export function AppLayout() {
       {/* Topbar */}
       <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur lg:pl-72 lg:pr-8">
         <div className="flex items-center gap-3 lg:hidden">
-          <Link to="/app"><Logo mark /></Link>
+          <Link to="/app"><Logo mark size="md" /></Link>
         </div>
         <div className="hidden flex-1 max-w-md lg:block">
           <div className="relative">

@@ -35,8 +35,6 @@ class RegisterController extends Controller
             'registration_status' => 'pending',
         ]);
 
-        // Assign student role
-        $user->assignRole('student');
 
         // Create empty profile
         $user->profile()->create();

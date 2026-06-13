@@ -6,7 +6,7 @@ type ProtectedRouteProps = {
 };
 
 export function ProtectedRoute({ requireRole }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, roles } = useAuth();
+  const { isAuthenticated, isLoading, role } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -17,9 +17,14 @@ export function ProtectedRoute({ requireRole }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requireRole && !roles.includes(requireRole)) {
-    // If they are a student trying to access admin
-    return <Navigate to="/app" replace />;
+  if (requireRole && role !== requireRole) {
+    if (requireRole === 'student' && role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    }
+    if (requireRole === 'admin' && role === 'student') {
+      return <Navigate to="/app" replace />;
+    }
+    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;
