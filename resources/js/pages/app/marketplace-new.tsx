@@ -4,6 +4,7 @@ import { ImagePlus, X, ArrowLeft } from "lucide-react";
 import { Btn, Field, Input, Select, Textarea, PageHeader } from "@/components/ui-bits";
 import { marketplaceCategories } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import api from "@/lib/api";
 
 const CONDITIONS = ["Like new", "Excellent", "Good", "Fair"];
 const MAX_IMAGES = 6;
@@ -30,11 +31,41 @@ export default function NewListing() {
 
   const removeImage = (i: number) => setPreviews(p => p.filter((_, idx) => idx !== i));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    // Mock submission delay
-    setTimeout(() => navigate("/app/marketplace"), 800);
+    
+    try {
+      // Need to convert to FormData to send images if we were uploading actual files
+      // Since we just have base64 previews in state for now, we'll just send JSON
+      // If we wanted to send files, we'd need a File object array in state.
+      // For simplicity, we send the base64 previews in the 'images' array field
+      // Wait, Laravel expects images as 'image' file uploads. Let's send it directly.
+      const fileInput = document.getElementById('listing-images') as HTMLInputElement;
+      const formData = new FormData();
+      formData.append('title', form.title);
+      formData.append('category', form.category);
+      formData.append('price', form.price);
+      formData.append('condition', form.condition);
+      formData.append('location', form.location);
+      formData.append('phone', form.phone);
+      formData.append('description', form.description);
+      
+      if (fileInput && fileInput.files) {
+        Array.from(fileInput.files).slice(0, MAX_IMAGES).forEach((file, index) => {
+          formData.append(`images[${index}]`, file);
+        });
+      }
+
+      await api.post('/api/marketplace', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      navigate("/app/marketplace");
+    } catch (error) {
+      console.error("Failed to create listing", error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

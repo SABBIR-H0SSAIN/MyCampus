@@ -11,7 +11,7 @@ const iconMap: Record<string, any> = { Tag, FileUp, RefreshCw, Droplet, Home, Us
 
 export default function Dashboard() {
   const { user } = useAuth();
-  
+
   const { data: realStats, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
@@ -26,7 +26,7 @@ export default function Dashboard() {
 
   // Format rank nicely, or default to Newcomer
   const rank = "Newcomer";
-  
+
   // Merge real stats with mock fallback while loading
   const currentStats = realStats || stats;
 

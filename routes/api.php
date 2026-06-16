@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\UserController;
+use App\Http\Controllers\MarketplaceListingController;
 use App\Http\Middleware\EnsureUserApproved;
 use Illuminate\Support\Facades\Route;
 
@@ -48,7 +49,7 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     Route::get('/dashboard/stats', [\App\Http\Controllers\DashboardController::class, 'stats']);
 
     // Future module routes will be added here:
-    // - Marketplace
+    Route::apiResource('marketplace', MarketplaceListingController::class)->only(['index', 'store', 'update']);
     // - Product Exchange
     // - Blood Donation
     // - Resource Hub

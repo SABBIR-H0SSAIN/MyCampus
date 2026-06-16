@@ -132,4 +132,11 @@ class User extends Authenticatable
     {
         return $query->where('registration_status', RegistrationStatus::Rejected);
     }
+    /**
+     * Get the marketplace listings associated with the user.
+     */
+    public function marketplaceListings()
+    {
+        return $this->hasMany(MarketplaceListing::class);
+    }
 }

@@ -479,9 +479,12 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
   );
 }
 
-//  Main Page 
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+
+// ─── Main Page ─────────────────────────────────────────────────────────────
 export default function Marketplace() {
-  const [listings, setListings] = useState<Listing[]>(MOCK_LISTINGS);
+  const [listings, setListings] = useState<Listing[]>([]);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedCondition, setSelectedCondition] = useState("All");
@@ -493,24 +496,48 @@ export default function Marketplace() {
   const [editingListing, setEditingListing] = useState<Listing | null>(null);
   const [markingId, setMarkingId] = useState<string | null>(null);
 
-  const toggleFav = (id: string) =>
-    setListings(prev => prev.map(l => l.id === id ? { ...l, favorites: !l.favorites } : l));
+  const { isLoading } = useQuery<Listing[]>({
+    queryKey: ['marketplace-listings'],
+    queryFn: async () => {
+      try {
+        const res = await api.get('/api/marketplace');
+        const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        setListings(data);
+        return data;
+      } catch (e) {
+        console.error("Failed to fetch listings", e);
+        return [];
+      }
+    }
+  });
 
-  const handleSaveEdit = (updated: Listing) => {
-    setListings(prev => prev.map(l => l.id === updated.id ? updated : l));
-    setEditingListing(null);
+  const toggleFav = (id: string) =>
+    setListings(prev => Array.isArray(prev) ? prev.map(l => l.id === id ? { ...l, favorites: !l.favorites } : l) : prev);
+
+  const handleSaveEdit = async (updated: Listing) => {
+    try {
+      await api.put(`/api/marketplace/${updated.id}`, updated);
+      setListings(prev => Array.isArray(prev) ? prev.map(l => l.id === updated.id ? updated : l) : prev);
+      setEditingListing(null);
+    } catch (e) {
+      console.error("Failed to update listing", e);
+    }
   };
 
-  const markSold = (id: string) => {
+  const markSold = async (id: string) => {
     setMarkingId(id);
-    setTimeout(() => {
-      setListings(prev => prev.map(l => l.id === id ? { ...l, sold: true } : l));
+    try {
+      await api.put(`/api/marketplace/${id}`, { is_sold: true });
+      setListings(prev => Array.isArray(prev) ? prev.map(l => l.id === id ? { ...l, sold: true } : l) : prev);
+    } catch (e) {
+      console.error("Failed to mark as sold", e);
+    } finally {
       setMarkingId(null);
-    }, 600);
+    }
   };
 
   const filtered = useMemo(() => {
-    let data = listings;
+    let data = Array.isArray(listings) ? listings : [];
     if (activeTab === "my") data = data.filter(l => l.selfPosted);
     if (activeTab === "saved") data = data.filter(l => l.favorites);
     if (search.trim()) data = data.filter(l =>
