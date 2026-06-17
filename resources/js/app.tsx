@@ -15,6 +15,8 @@ import ProfilePage from './pages/app/profile';
 import EditProfile from './pages/app/edit-profile';
 import Marketplace from './pages/app/marketplace';
 import NewListing from './pages/app/marketplace-new';
+import Exchange from './pages/app/exchange';
+import NewExchange from './pages/app/exchange-new';
 import { AdminLayout } from './components/layout/AdminLayout';
 import AdminDashboard from './pages/admin/index';
 import RegistrationsQueue from './pages/admin/registrations';
@@ -51,7 +53,8 @@ function App() {
                 <Route index element={<AppDashboard />} />
                 <Route path="marketplace" element={<Marketplace />} />
                 <Route path="marketplace/new" element={<NewListing />} />
-                <Route path="exchange" element={<div className="p-8 text-center">Exchange Placeholder</div>} />
+                <Route path="exchange" element={<Exchange />} />
+                <Route path="exchange/new" element={<NewExchange />} />
                 <Route path="blood" element={<div className="p-8 text-center">Blood Network Placeholder</div>} />
                 <Route path="resources" element={<div className="p-8 text-center">Resources Placeholder</div>} />
                 <Route path="roommates" element={<div className="p-8 text-center">Roommates Placeholder</div>} />

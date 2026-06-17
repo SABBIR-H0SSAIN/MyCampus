@@ -52,8 +52,8 @@ function NavItem({ to, label, icon: Icon, exact }: { to: string; label: string; 
   );
 }
 
-export function AppLayout() {
-  const { user, roles, logout } = useAuth();
+export function AppLayout() {  const { user, roles, logout } = useAuth();
+
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const unread = 3; // Placeholder mock
@@ -68,7 +68,7 @@ export function AppLayout() {
         <div className="flex h-16 items-center px-6 border-b border-border">
           <Link to="/app"><Logo size="md" /></Link>
         </div>
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
           <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">Workspace</p>
           {nav.map((n) => <NavItem key={n.to} {...n} />)}
         </nav>

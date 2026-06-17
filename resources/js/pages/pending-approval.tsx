@@ -18,7 +18,7 @@ export default function PendingApproval() {
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">Registration Pending</h1>
             <p className="text-muted-foreground">
-              Your account is currently under review by our administrators. This process ensures only verified KUET students can access MYCampus.
+              Your account is currently under review by our administrators. This process ensures only verified KUET students can access MyCampus.
             </p>
           </div>
           <div className="rounded-lg border border-border bg-surface-2 p-4 text-sm">

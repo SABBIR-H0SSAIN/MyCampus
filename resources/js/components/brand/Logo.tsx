@@ -31,8 +31,8 @@ export function Logo({
 
   return (
     <div className={cn("flex items-center font-display font-semibold tracking-tight text-primary", activeSize.container, className)}>
-      <img src="/images/logo.png" alt="MYCampus Logo" className={cn("object-contain shrink-0", activeSize.img)} />
-      {!mark && <span className={cn("font-bold tracking-tight shrink-0", activeSize.text)}>MYCampus</span>}
+      <img src="/images/logo.png" alt="MyCampus Logo" className={cn("object-contain shrink-0", activeSize.img)} />
+      {!mark && <span className={cn("font-bold tracking-tight shrink-0", activeSize.text)}>MyCampus</span>}
     </div>
   );
 }
