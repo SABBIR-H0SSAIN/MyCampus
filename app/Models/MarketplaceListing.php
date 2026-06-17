@@ -15,12 +15,14 @@ class MarketplaceListing extends Model
         'category',
         'location',
         'phone',
-        'image_path',
+        'images',
+        'views',
         'is_sold',
     ];
 
     protected $casts = [
         'is_sold' => 'boolean',
+        'images' => 'array',
     ];
 
     public function user()

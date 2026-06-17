@@ -139,4 +139,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(MarketplaceListing::class);
     }
+
+    public function favoriteListings()
+    {
+        return $this->belongsToMany(MarketplaceListing::class, 'marketplace_favorites');
+    }
 }

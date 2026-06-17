@@ -15,7 +15,10 @@ class MarketplaceListingController extends Controller
     {
         $listings = MarketplaceListing::with('user.profile')->latest()->get();
 
-        $formatted = $listings->map(function ($listing) use ($request) {
+        $user = $request->user();
+        $favorites = $user ? $user->favoriteListings()->pluck('marketplace_listings.id')->toArray() : [];
+
+        $formatted = $listings->map(function ($listing) use ($request, $favorites) {
             $user = $listing->user;
             $department = $user->department ? $user->department->value : 'N/A';
             
@@ -33,14 +36,15 @@ class MarketplaceListingController extends Controller
                 'sellerAvatar' => $user->profile->avatar_url ?? 'https://api.dicebear.com/9.x/notionists/svg?seed=' . $user->id,
                 'sellerRoll' => $user->roll_number,
                 'department' => $departmentStr,
-                'image' => $listing->image_path ?: 'https://images.unsplash.com/photo-1574607383476-f517f260d30b?w=600&q=70',
-                'images' => $listing->image_path ? [$listing->image_path, $listing->image_path] : [],
+                'image' => !empty($listing->images) ? $listing->images[0] : 'https://images.unsplash.com/photo-1574607383476-f517f260d30b?w=600&q=70',
+                'images' => $listing->images ?? [],
                 'sold' => (bool) $listing->is_sold,
+                'views' => $listing->views,
                 'location' => $listing->location,
                 'phone' => $listing->phone,
                 'description' => $listing->description ?: 'No description provided.',
                 'selfPosted' => $user->id === $request->user()->id,
-                'favorites' => false,
+                'favorites' => in_array($listing->id, $favorites),
                 'postedAt' => $listing->created_at->diffForHumans(),
             ];
         });
@@ -64,10 +68,17 @@ class MarketplaceListingController extends Controller
             'images.*' => 'image|max:5120', // 5MB max
         ]);
 
-        $imagePath = null;
+        $imagePaths = [];
         if ($request->hasFile('images')) {
-            $file = $request->file('images')[0];
-            $imagePath = '/storage/' . $file->store('marketplace', 'public');
+            $files = $request->file('images');
+            $files = is_array($files) ? $files : [$files];
+            foreach ($files as $file) {
+                $imagePaths[] = '/storage/' . $file->store('marketplace', 'public');
+            }
+        } elseif ($request->hasFile('images.0')) {
+            foreach ($request->file('images') as $file) {
+                $imagePaths[] = '/storage/' . $file->store('marketplace', 'public');
+            }
         }
 
         $listing = $request->user()->marketplaceListings()->create([
@@ -78,7 +89,7 @@ class MarketplaceListingController extends Controller
             'location' => $validated['location'],
             'phone' => $validated['phone'],
             'description' => $validated['description'],
-            'image_path' => $imagePath,
+            'images' => !empty($imagePaths) ? $imagePaths : null,
         ]);
 
         return response()->json(['message' => 'Listing created successfully', 'id' => $listing->id], 201);
@@ -109,5 +120,46 @@ class MarketplaceListingController extends Controller
         $listing->update($validated);
 
         return response()->json(['message' => 'Listing updated successfully']);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Request $request, string $id): JsonResponse
+    {
+        $listing = MarketplaceListing::findOrFail($id);
+
+        if ($listing->user_id !== $request->user()->id && $request->user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $listing->delete();
+
+        return response()->json(['message' => 'Listing deleted successfully']);
+    }
+
+    /**
+     * Display the specified resource and increment views.
+     */
+    public function show(string $id): JsonResponse
+    {
+        $listing = MarketplaceListing::findOrFail($id);
+        $listing->increment('views');
+
+        return response()->json([
+            'message' => 'View recorded',
+            'views' => $listing->views
+        ]);
+    }
+
+    /**
+     * Toggle favorite status for the listing.
+     */
+    public function toggleFavorite(Request $request, string $id): JsonResponse
+    {
+        $listing = MarketplaceListing::findOrFail($id);
+        $request->user()->favoriteListings()->toggle($listing);
+
+        return response()->json(['message' => 'Favorite toggled']);
     }
 }

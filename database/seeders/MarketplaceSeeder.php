@@ -157,6 +157,9 @@ class MarketplaceSeeder extends Seeder
         ];
 
         foreach ($listings as $listing) {
+            $image = $listing['image_path'] ?? null;
+            unset($listing['image_path']);
+            $listing['images'] = $image ? [$image] : [];
             MarketplaceListing::create(array_merge($listing, ['user_id' => $user->id]));
         }
     }

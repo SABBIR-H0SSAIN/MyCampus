@@ -21,8 +21,16 @@ return new class extends Migration
             $table->string('category');
             $table->string('location');
             $table->string('phone');
-            $table->string('image_path')->nullable();
+            $table->json('images')->nullable();
+            $table->unsignedBigInteger('views')->default(0);
             $table->boolean('is_sold')->default(false);
+            $table->timestamps();
+        });
+
+        Schema::create('marketplace_favorites', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('marketplace_listing_id')->constrained('marketplace_listings')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -32,6 +40,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('marketplace_favorites');
         Schema::dropIfExists('marketplace_listings');
     }
 };

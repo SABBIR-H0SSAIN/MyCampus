@@ -49,7 +49,8 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     Route::get('/dashboard/stats', [\App\Http\Controllers\DashboardController::class, 'stats']);
 
     // Future module routes will be added here:
-    Route::apiResource('marketplace', MarketplaceListingController::class)->only(['index', 'store', 'update']);
+    Route::post('marketplace/{id}/favorite', [MarketplaceListingController::class, 'toggleFavorite']);
+    Route::apiResource('marketplace', MarketplaceListingController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
     // - Product Exchange
     // - Blood Donation
     // - Resource Hub
