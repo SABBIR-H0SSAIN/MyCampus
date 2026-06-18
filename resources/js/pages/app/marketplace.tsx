@@ -4,7 +4,7 @@ import {
   Search, Heart, MapPin, Plus, Tag, X, SlidersHorizontal,
   Edit3, CheckCircle, Package, Eye, ArrowUpDown, LayoutGrid,
   List, Phone, Flag, ImagePlus, ChevronLeft, ChevronRight,
-  ExternalLink, ShieldCheck,
+  ExternalLink, ShieldCheck, Trash2,
 } from "lucide-react";
 import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,7 @@ type Listing = {
   selfPosted: boolean;
   favorites: boolean;
   postedAt: string;
+  views?: number;
 };
 
 //  Mock data with enriched fields 
@@ -78,6 +79,7 @@ function enrich(l: any, selfPosted = false): Listing {
     selfPosted,
     favorites: false,
     postedAt: "2d ago",
+    views: Math.floor(Math.random() * 500)
   };
 }
 
@@ -100,12 +102,13 @@ const COND_COLOR: Record<string, "success" | "info" | "warning" | "default"> = {
 };
 
 // ─── Detail Modal ─────────────────────────────────────────────────────────────
-function DetailModal({ listing, onClose, onToggleFav, onEdit, onMarkSold }: {
+function DetailModal({ listing, onClose, onToggleFav, onEdit, onMarkSold, onDelete }: {
   listing: Listing;
   onClose: () => void;
   onToggleFav: (id: string) => void;
   onEdit: (l: Listing) => void;
   onMarkSold: (id: string) => void;
+  onDelete: (id: string) => void;
 }) {
   const [imgIdx, setImgIdx] = useState(0);
   const imgs = listing.images?.length ? listing.images : [listing.image];
@@ -124,6 +127,11 @@ function DetailModal({ listing, onClose, onToggleFav, onEdit, onMarkSold }: {
               <Btn size="sm" variant="outline" onClick={() => { onClose(); onEdit(listing); }}>
                 <Edit3 className="h-3.5 w-3.5" /> Edit
               </Btn>
+            )}
+            {listing.selfPosted && (
+                <button onClick={() => { onClose(); onDelete(listing.id); }} className="grid h-8 w-8 place-items-center rounded-md text-blood hover:bg-blood/10">
+                    <Trash2 className="h-4 w-4" />
+                </button>
             )}
             <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-secondary">
               <X className="h-4 w-4" />
@@ -511,8 +519,17 @@ export default function Marketplace() {
     }
   });
 
-  const toggleFav = (id: string) =>
+  const toggleFav = async (id: string) => {
+    // Optimistic UI update
     setListings(prev => Array.isArray(prev) ? prev.map(l => l.id === id ? { ...l, favorites: !l.favorites } : l) : prev);
+    try {
+      await api.post(`/api/marketplace/${id}/favorite`);
+    } catch (e) {
+      console.error("Failed to toggle favorite", e);
+      // Revert on failure
+      setListings(prev => Array.isArray(prev) ? prev.map(l => l.id === id ? { ...l, favorites: !l.favorites } : l) : prev);
+    }
+  };
 
   const handleSaveEdit = async (updated: Listing) => {
     try {
@@ -536,6 +553,17 @@ export default function Marketplace() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this listing?")) return;
+    try {
+      await api.delete(`/api/marketplace/${id}`);
+      setListings(prev => Array.isArray(prev) ? prev.filter(l => l.id !== id) : prev);
+      if (detailListing?.id === id) setDetailListing(null);
+    } catch (e) {
+      console.error("Failed to delete listing", e);
+    }
+  };
+
   const filtered = useMemo(() => {
     let data = Array.isArray(listings) ? listings : [];
     if (activeTab === "my") data = data.filter(l => l.selfPosted);
@@ -554,8 +582,8 @@ export default function Marketplace() {
   }, [listings, search, selectedCategory, selectedCondition, sortBy, activeTab]);
 
   const myCounts = {
-    active: listings.filter(l => l.selfPosted && !l.sold).length,
-    sold: listings.filter(l => l.selfPosted && l.sold).length,
+    active: Array.isArray(listings) ? listings.filter(l => l.selfPosted && !l.sold).length : 0,
+    sold: Array.isArray(listings) ? listings.filter(l => l.selfPosted && l.sold).length : 0,
   };
 
   return (
@@ -587,7 +615,6 @@ export default function Marketplace() {
           {([
             [Package, "text-primary", myCounts.active, "active"],
             [CheckCircle, "text-success", myCounts.sold, "sold"],
-            [Eye, "text-info", 247, "views"],
           ] as const).map(([Icon, color, value, label]) => (
             <div key={label} className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5">
               <Icon className={cn("h-4 w-4", color)} />
@@ -729,6 +756,7 @@ export default function Marketplace() {
           onToggleFav={toggleFav}
           onEdit={l => { setDetailListing(null); setEditingListing(l); }}
           onMarkSold={markSold}
+          onDelete={handleDelete}
         />
       )}
 

@@ -12,6 +12,7 @@ const MAX_IMAGES = 6;
 export default function NewListing() {
   const navigate = useNavigate();
   const [previews, setPreviews] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [form, setForm] = useState({
     title: "", category: "", price: "", condition: "Like new",
     location: "", phone: "", description: "",
@@ -22,26 +23,26 @@ export default function NewListing() {
 
   const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []).slice(0, MAX_IMAGES - previews.length);
+    setImageFiles(prev => [...prev, ...files]);
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = ev => setPreviews(p => [...p, ev.target?.result as string]);
       reader.readAsDataURL(file);
     });
+    // Reset input so same file can be selected again
+    e.target.value = '';
   };
 
-  const removeImage = (i: number) => setPreviews(p => p.filter((_, idx) => idx !== i));
+  const removeImage = (i: number) => {
+    setPreviews(p => p.filter((_, idx) => idx !== i));
+    setImageFiles(p => p.filter((_, idx) => idx !== i));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     
     try {
-      // Need to convert to FormData to send images if we were uploading actual files
-      // Since we just have base64 previews in state for now, we'll just send JSON
-      // If we wanted to send files, we'd need a File object array in state.
-      // For simplicity, we send the base64 previews in the 'images' array field
-      // Wait, Laravel expects images as 'image' file uploads. Let's send it directly.
-      const fileInput = document.getElementById('listing-images') as HTMLInputElement;
       const formData = new FormData();
       formData.append('title', form.title);
       formData.append('category', form.category);
@@ -50,12 +51,10 @@ export default function NewListing() {
       formData.append('location', form.location);
       formData.append('phone', form.phone);
       formData.append('description', form.description);
-      
-      if (fileInput && fileInput.files) {
-        Array.from(fileInput.files).slice(0, MAX_IMAGES).forEach((file, index) => {
-          formData.append(`images[${index}]`, file);
-        });
-      }
+
+      imageFiles.forEach((file) => {
+        formData.append('images[]', file);
+      });
 
       await api.post('/api/marketplace', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
