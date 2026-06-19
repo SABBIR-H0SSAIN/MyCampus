@@ -2,18 +2,51 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Btn, Field, Input, Textarea, PageHeader } from "@/components/ui-bits";
 import { ImagePlus, X, ArrowRightLeft } from "lucide-react";
+import api from "@/lib/api";
 
 export default function NewExchange() {
   const navigate = useNavigate();
   const [offerImage, setOfferImage] = useState<string | null>(null);
+  const [offerFile, setOfferFile] = useState<File | null>(null);
   const [wantImage, setWantImage] = useState<string | null>(null);
+  const [wantFile, setWantFile] = useState<File | null>(null);
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>, setter: (val: string | null) => void) => {
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>, setPreview: (val: string | null) => void, setFile: (f: File | null) => void) => {
     const file = e.target.files?.[0];
     if (file) {
+      setFile(file);
       const reader = new FileReader();
-      reader.onload = (ev) => setter(ev.target?.result as string);
+      reader.onload = (ev) => setPreview(ev.target?.result as string);
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    
+    // Create new FormData to format exactly what the API expects
+    const submitData = new FormData();
+    submitData.append('offering', formData.get('offering') as string);
+    submitData.append('desire', formData.get('desire') as string);
+    submitData.append('description', formData.get('description') as string);
+    submitData.append('phone', formData.get('phone') as string);
+    
+    if (offerFile) submitData.append('images[]', offerFile);
+    if (wantFile) submitData.append('images[]', wantFile);
+
+    try {
+      await api.post('/api/exchange', submitData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      navigate("/app/exchange");
+    } catch (err) {
+      console.error("Failed to create exchange post", err);
+      alert("Failed to post. Check console for details.");
+      setIsSubmitting(false);
     }
   };
 
@@ -27,7 +60,7 @@ export default function NewExchange() {
       
       <form 
         className="rounded-2xl border border-border bg-surface shadow-sm overflow-hidden" 
-        onSubmit={(e) => { e.preventDefault(); navigate("/app/exchange"); }}
+        onSubmit={handleSubmit}
       >
         <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
           {/* Offering Section */}
@@ -44,7 +77,7 @@ export default function NewExchange() {
                 <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border bg-secondary group">
                   <img src={offerImage} alt="Offering" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button type="button" onClick={() => setOfferImage(null)} className="h-10 w-10 bg-background rounded-full flex items-center justify-center text-blood hover:bg-surface shadow-sm transition-transform hover:scale-110">
+                    <button type="button" onClick={() => { setOfferImage(null); setOfferFile(null); }} className="h-10 w-10 bg-background rounded-full flex items-center justify-center text-blood hover:bg-surface shadow-sm transition-transform hover:scale-110">
                       <X className="h-5 w-5" />
                     </button>
                   </div>
@@ -58,21 +91,21 @@ export default function NewExchange() {
                     <p className="text-sm font-medium">Upload offering photo</p>
                     <p className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</p>
                   </div>
-                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleImage(e, setOfferImage)} />
+                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleImage(e, setOfferImage, setOfferFile)} required />
                 </label>
               )}
             </Field>
 
             <Field label="Product Name" required>
-              <Input placeholder="e.g. Casio FX-991EX Calculator" required />
+              <Input name="offering" placeholder="e.g. Casio FX-991EX Calculator" required />
             </Field>
             
             <Field label="Details & Condition" required>
-              <Textarea rows={4} placeholder="Describe the condition, age, and any other relevant details..." required />
+              <Textarea name="description" rows={4} placeholder="Describe the condition, age, and any other relevant details..." required />
             </Field>
 
             <Field label="Your Phone Number" required>
-              <Input type="tel" placeholder="+880 17XX XXX XXX" required />
+              <Input name="phone" type="tel" placeholder="+880 17XX XXX XXX" required />
             </Field>
           </div>
 
@@ -93,7 +126,7 @@ export default function NewExchange() {
                 <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border bg-secondary group">
                   <img src={wantImage} alt="Wanted" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button type="button" onClick={() => setWantImage(null)} className="h-10 w-10 bg-background rounded-full flex items-center justify-center text-blood hover:bg-surface shadow-sm transition-transform hover:scale-110">
+                    <button type="button" onClick={() => { setWantImage(null); setWantFile(null); }} className="h-10 w-10 bg-background rounded-full flex items-center justify-center text-blood hover:bg-surface shadow-sm transition-transform hover:scale-110">
                       <X className="h-5 w-5" />
                     </button>
                   </div>
@@ -107,13 +140,13 @@ export default function NewExchange() {
                     <p className="text-sm font-medium">Upload reference photo</p>
                     <p className="text-xs text-muted-foreground mt-1">Optional, helps others understand what you need</p>
                   </div>
-                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleImage(e, setWantImage)} />
+                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleImage(e, setWantImage, setWantFile)} />
                 </label>
               )}
             </Field>
 
             <Field label="Desired Item Name" required>
-              <Input placeholder="e.g. Engineering Mathematics by Stroud" required />
+              <Input name="desire" placeholder="e.g. Engineering Mathematics by Stroud" required />
             </Field>
 
             <Field label="Acceptable Extras">
@@ -124,9 +157,11 @@ export default function NewExchange() {
 
         <div className="flex items-center justify-end gap-3 border-t border-border bg-background/50 p-6">
           <Link to="/app/exchange">
-            <Btn type="button" variant="outline">Cancel</Btn>
+            <Btn type="button" variant="outline" disabled={isSubmitting}>Cancel</Btn>
           </Link>
-          <Btn type="submit" size="lg" className="min-w-[200px]">Publish Exchange</Btn>
+          <Btn type="submit" size="lg" className="min-w-[200px]" disabled={isSubmitting}>
+            {isSubmitting ? "Publishing..." : "Publish Exchange"}
+          </Btn>
         </div>
       </form>
     </div>
