@@ -51,7 +51,13 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     // Future module routes will be added here:
     Route::post('marketplace/{id}/favorite', [MarketplaceListingController::class, 'toggleFavorite']);
     Route::apiResource('marketplace', MarketplaceListingController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
+
     // - Product Exchange
+    Route::get('/exchange/requests/my', [\App\Http\Controllers\ExchangeController::class, 'myRequests']);
+    Route::post('/exchange/{id}/request', [\App\Http\Controllers\ExchangeController::class, 'storeRequest']);
+    Route::put('/exchange/requests/{id}/accept', [\App\Http\Controllers\ExchangeController::class, 'acceptRequest']);
+    Route::apiResource('exchange', \App\Http\Controllers\ExchangeController::class)->only(['index', 'store', 'update', 'destroy']);
+
     // - Blood Donation
     // - Resource Hub
     // - Roommate Finder

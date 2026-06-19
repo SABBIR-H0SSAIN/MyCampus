@@ -144,4 +144,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(MarketplaceListing::class, 'marketplace_favorites');
     }
+
+    public function exchangePosts()
+    {
+        return $this->hasMany(ExchangePost::class);
+    }
+
+    public function exchangeRequests()
+    {
+        return $this->hasMany(ExchangeRequest::class);
+    }
 }
