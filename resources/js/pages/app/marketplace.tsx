@@ -4,13 +4,30 @@ import {
   Search, Heart, MapPin, Plus, Tag, X, SlidersHorizontal,
   Edit3, CheckCircle, Package, Eye, ArrowUpDown, LayoutGrid,
   List, Phone, Flag, ImagePlus, ChevronLeft, ChevronRight,
-  ExternalLink, ShieldCheck, Trash2,
+  ExternalLink, ShieldCheck, Trash2, MessageSquare, Send
 } from "lucide-react";
 import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
 import { marketplaceListings, marketplaceCategories } from "@/lib/mock-data";
 
 //  Types 
+type ListingResponse = {
+  id: string;
+  responderName: string;
+  responderAvatar: string;
+  responderPhone: string;
+  message: string;
+  status: "pending" | "accepted" | "declined";
+  date: string;
+};
+
+type MyRequest = {
+  listingId: string;
+  status: "pending" | "accepted" | "declined";
+  message: string;
+  date: string;
+};
+
 type Listing = {
   id: string;
   title: string;
@@ -31,6 +48,7 @@ type Listing = {
   favorites: boolean;
   postedAt: string;
   views?: number;
+  responses?: ListingResponse[];
 };
 
 //  Mock data with enriched fields 
@@ -79,7 +97,8 @@ function enrich(l: any, selfPosted = false): Listing {
     selfPosted,
     favorites: false,
     postedAt: "2d ago",
-    views: Math.floor(Math.random() * 500)
+    views: Math.floor(Math.random() * 500),
+    responses: []
   };
 }
 
@@ -101,14 +120,144 @@ const COND_COLOR: Record<string, "success" | "info" | "warning" | "default"> = {
   "Like new": "success", "Excellent": "info", "Good": "warning", "Fair": "default",
 };
 
-// ─── Detail Modal ─────────────────────────────────────────────────────────────
-function DetailModal({ listing, onClose, onToggleFav, onEdit, onMarkSold, onDelete }: {
+// ─── Modals ─────────────────────────────────────────────────────────────
+
+function RequestBuyModal({
+  listing,
+  onClose,
+  onSubmit,
+  isPending
+}: {
   listing: Listing;
+  onClose: () => void;
+  onSubmit: (data: { message: string, phone: string }) => void;
+  isPending: boolean;
+}) {
+  const [form, setForm] = useState({ message: "", phone: "" });
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface shadow-2xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-semibold text-lg">Request to Buy</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="flex items-center gap-4 p-3 bg-secondary rounded-xl mb-6">
+          <img src={listing.image} alt="" className="h-12 w-12 rounded-lg object-cover" />
+          <div>
+            <p className="font-semibold text-sm line-clamp-1">{listing.title}</p>
+            <p className="text-xs text-muted-foreground">{listing.seller}</p>
+          </div>
+        </div>
+        <form onSubmit={e => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
+          <Field label="Message to seller" required>
+            <Textarea
+              rows={3}
+              value={form.message}
+              onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+              placeholder="Hi, is this still available? I can meet you at..."
+              required
+            />
+          </Field>
+          <Field label="Your phone number" required>
+            <Input
+              type="tel"
+              value={form.phone}
+              onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+              placeholder="+880 1..."
+              required
+            />
+          </Field>
+          <div className="pt-2 flex justify-end gap-3">
+            <Btn variant="outline" type="button" onClick={onClose}>Cancel</Btn>
+            <Btn type="submit" disabled={isPending}>
+              {isPending ? "Sending..." : <><Send className="h-4 w-4 mr-2" /> Send Request</>}
+            </Btn>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ResponsesModal({
+  listing,
+  onClose,
+  onAccept,
+  isPending
+}: {
+  listing: Listing;
+  onClose: () => void;
+  onAccept: (id: string) => void;
+  isPending: boolean;
+}) {
+  const responses = listing.responses || [];
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-xl max-h-[85vh] flex flex-col rounded-2xl border border-border bg-surface shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
+          <div>
+            <h3 className="font-semibold text-lg">Purchase Requests</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">For: {listing.title}</p>
+          </div>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {responses.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground">
+              <MessageSquare className="h-8 w-8 mx-auto mb-3 opacity-20" />
+              <p>No requests yet.</p>
+            </div>
+          ) : (
+            responses.map(res => (
+              <div key={res.id} className="border border-border rounded-xl p-4 bg-background">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-3">
+                    <img src={res.responderAvatar} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
+                    <div>
+                      <p className="font-semibold text-sm">{res.responderName}</p>
+                      <p className="text-xs text-muted-foreground">{res.date}</p>
+                    </div>
+                  </div>
+                  <Badge variant={res.status === "pending" ? "warning" : res.status === "accepted" ? "success" : "default"}>{res.status}</Badge>
+                </div>
+                <div className="bg-secondary/50 rounded-lg p-3 mb-4 border border-border/50">
+                  <p className="text-sm italic">"{res.message}"</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <a href={`tel:${res.responderPhone}`} className="text-sm font-medium text-primary flex items-center gap-1.5 hover:underline">
+                    <Phone className="h-4 w-4" /> {res.responderPhone}
+                  </a>
+                  {res.status === "pending" && listing.status !== "Completed" && !listing.sold && (
+                    <Btn size="sm" onClick={() => onAccept(res.id)} disabled={isPending}>
+                      <CheckCircle className="h-4 w-4 mr-1.5" /> Accept Buyer
+                    </Btn>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Detail Modal ─────────────────────────────────────────────────────────────
+function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMarkSold, onDelete, onRequestBuy, onViewResponses }: {
+  listing: Listing;
+  hasRequested: boolean;
   onClose: () => void;
   onToggleFav: (id: string) => void;
   onEdit: (l: Listing) => void;
   onMarkSold: (id: string) => void;
   onDelete: (id: string) => void;
+  onRequestBuy: (l: Listing) => void;
+  onViewResponses: (l: Listing) => void;
 }) {
   const [imgIdx, setImgIdx] = useState(0);
   const imgs = listing.images?.length ? listing.images : [listing.image];
@@ -228,12 +377,30 @@ function DetailModal({ listing, onClose, onToggleFav, onEdit, onMarkSold, onDele
             {/* Actions */}
             {!listing.sold ? (
               <div className="space-y-2">
-                <a
-                  href={`tel:${listing.phone}`}
-                  className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition"
-                >
-                  <Phone className="h-4 w-4" /> {listing.phone}
-                </a>
+                {!listing.selfPosted ? (
+                  hasRequested ? (
+                    <Btn variant="outline" className="w-full text-success border-success/30 bg-success/5" disabled>
+                      <CheckCircle className="h-4 w-4 mr-2" /> Requested
+                    </Btn>
+                  ) : (
+                    <Btn className="w-full" onClick={() => { onClose(); onRequestBuy(listing); }}>
+                      <MessageSquare className="h-4 w-4 mr-2" /> Request to Buy
+                    </Btn>
+                  )
+                ) : (
+                  <Btn variant="outline" className="w-full bg-primary/5 text-primary hover:bg-primary/10" onClick={() => { onClose(); onViewResponses(listing); }}>
+                    <MessageSquare className="h-4 w-4 mr-2" /> View Responses {listing.responses && listing.responses.length > 0 && <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] leading-none">{listing.responses.length}</span>}
+                  </Btn>
+                )}
+                
+                {!listing.selfPosted && (
+                  <a
+                    href={`tel:${listing.phone}`}
+                    className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-secondary text-foreground px-4 py-2.5 text-sm font-medium hover:bg-secondary/80 transition"
+                  >
+                    <Phone className="h-4 w-4 text-muted-foreground" /> Call: {listing.phone}
+                  </a>
+                )}
                 <div className="flex gap-2">
                   <button
                     onClick={() => onToggleFav(listing.id)}
@@ -487,7 +654,7 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
   );
 }
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 
 // ─── Main Page ─────────────────────────────────────────────────────────────
@@ -499,10 +666,15 @@ export default function Marketplace() {
   const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [activeTab, setActiveTab] = useState<"all" | "my" | "saved">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "my" | "saved" | "requests">("all");
   const [detailListing, setDetailListing] = useState<Listing | null>(null);
   const [editingListing, setEditingListing] = useState<Listing | null>(null);
   const [markingId, setMarkingId] = useState<string | null>(null);
+  
+  const [requestingListing, setRequestingListing] = useState<Listing | null>(null);
+  const [viewingResponses, setViewingResponses] = useState<Listing | null>(null);
+  
+  const queryClient = useQueryClient();
 
   const { isLoading } = useQuery<Listing[]>({
     queryKey: ['marketplace-listings'],
@@ -516,6 +688,35 @@ export default function Marketplace() {
         console.error("Failed to fetch listings", e);
         return [];
       }
+    }
+  });
+
+  const { data: myRequests = [], isLoading: isLoadingRequests } = useQuery<MyRequest[]>({
+    queryKey: ['marketplace-requests'],
+    queryFn: async () => {
+      try {
+        const res = await api.get('/api/marketplace/requests/my');
+        return Array.isArray(res.data) ? res.data : [];
+      } catch (e) {
+        return [];
+      }
+    }
+  });
+
+  const requestMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => api.post(`/api/marketplace/${id}/request`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+      setRequestingListing(null);
+    }
+  });
+
+  const acceptMutation = useMutation({
+    mutationFn: (id: string) => api.put(`/api/marketplace/requests/${id}/accept`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+      setViewingResponses(null);
     }
   });
 
@@ -568,6 +769,7 @@ export default function Marketplace() {
     let data = Array.isArray(listings) ? listings : [];
     if (activeTab === "my") data = data.filter(l => l.selfPosted);
     if (activeTab === "saved") data = data.filter(l => l.favorites);
+    if (activeTab === "requests") data = data.filter(l => myRequests.some(r => r.listingId === l.id));
     if (search.trim()) data = data.filter(l =>
       l.title.toLowerCase().includes(search.toLowerCase()) ||
       l.seller.toLowerCase().includes(search.toLowerCase())
@@ -596,15 +798,15 @@ export default function Marketplace() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-border">
-        {(["all", "my", "saved"] as const).map(tab => (
+        {(["all", "my", "saved", "requests"] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={cn("px-4 py-2.5 text-sm font-medium transition",
+            className={cn("px-4 py-2.5 text-sm font-medium transition whitespace-nowrap",
               activeTab === tab ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {tab === "all" ? "All listings" : tab === "my" ? `My Ads (${myCounts.active})` : `Saved (${listings.filter(l => l.favorites).length})`}
+            {tab === "all" ? "All listings" : tab === "my" ? `My Ads (${myCounts.active})` : tab === "saved" ? `Saved (${listings.filter(l => l.favorites).length})` : `My Requests (${myRequests.length})`}
           </button>
         ))}
       </div>
@@ -752,11 +954,34 @@ export default function Marketplace() {
       {detailListing && (
         <DetailModal
           listing={listings.find(l => l.id === detailListing.id) ?? detailListing}
+          hasRequested={myRequests.some(r => r.listingId === detailListing.id)}
           onClose={() => setDetailListing(null)}
           onToggleFav={toggleFav}
           onEdit={l => { setDetailListing(null); setEditingListing(l); }}
           onMarkSold={markSold}
           onDelete={handleDelete}
+          onRequestBuy={setRequestingListing}
+          onViewResponses={setViewingResponses}
+        />
+      )}
+
+      {/* Request Modal */}
+      {requestingListing && (
+        <RequestBuyModal
+          listing={requestingListing}
+          onClose={() => setRequestingListing(null)}
+          onSubmit={data => requestMutation.mutate({ id: requestingListing.id, data })}
+          isPending={requestMutation.isPending}
+        />
+      )}
+
+      {/* Responses Modal */}
+      {viewingResponses && (
+        <ResponsesModal
+          listing={listings.find(l => l.id === viewingResponses.id) ?? viewingResponses}
+          onClose={() => setViewingResponses(null)}
+          onAccept={id => acceptMutation.mutate(id)}
+          isPending={acceptMutation.isPending}
         />
       )}
 

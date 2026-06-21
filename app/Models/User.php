@@ -154,4 +154,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ExchangeRequest::class);
     }
+
+    public function marketplaceRequests()
+    {
+        return $this->hasMany(MarketplaceRequest::class);
+    }
 }

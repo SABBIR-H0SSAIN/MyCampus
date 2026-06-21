@@ -29,4 +29,9 @@ class MarketplaceListing extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function marketplaceRequests()
+    {
+        return $this->hasMany(MarketplaceRequest::class);
+    }
 }
