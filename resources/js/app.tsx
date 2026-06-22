@@ -17,10 +17,12 @@ import Marketplace from './pages/app/marketplace';
 import NewListing from './pages/app/marketplace-new';
 import Exchange from './pages/app/exchange';
 import NewExchange from './pages/app/exchange-new';
+import AnnouncementsPage from './pages/app/announcements';
 import { AdminLayout } from './components/layout/AdminLayout';
 import AdminDashboard from './pages/admin/index';
 import RegistrationsQueue from './pages/admin/registrations';
 import AdminLogin from './pages/admin/login';
+import AdminAnnouncements from './pages/admin/announcements';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -59,7 +61,7 @@ function App() {
                 <Route path="resources" element={<div className="p-8 text-center">Resources Placeholder</div>} />
                 <Route path="roommates" element={<div className="p-8 text-center">Roommates Placeholder</div>} />
                 <Route path="lost-found" element={<div className="p-8 text-center">Lost & Found Hub Placeholder</div>} />
-                <Route path="announcements" element={<div className="p-8 text-center">Announcements Placeholder</div>} />
+                <Route path="announcements" element={<AnnouncementsPage />} />
                 <Route path="notifications" element={<div className="p-8 text-center">Notifications Placeholder</div>} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="profile/edit" element={<EditProfile />} />
@@ -73,7 +75,7 @@ function App() {
                 <Route path="registrations" element={<RegistrationsQueue />} />
                 <Route path="users" element={<div className="p-8 text-center">Users Page Placeholder</div>} />
                 <Route path="reports" element={<div className="p-8 text-center">Reports Page Placeholder</div>} />
-                <Route path="announcements" element={<div className="p-8 text-center">Announcements Page Placeholder</div>} />
+                <Route path="announcements" element={<AdminAnnouncements />} />
               </Route>
             </Route>
 

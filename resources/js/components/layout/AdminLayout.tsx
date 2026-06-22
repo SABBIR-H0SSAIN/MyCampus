@@ -64,9 +64,6 @@ export function AdminLayout() {
           {nav.map((n) => <NavItem key={n.to} {...n} />)}
         </nav>
         <div className="space-y-1 border-t border-sidebar-border p-3">
-          <Link to="/app" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground">
-            <LogOut className="h-4 w-4" /> Back to App
-          </Link>
           <button
             onClick={logout}
             className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm text-blood hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
