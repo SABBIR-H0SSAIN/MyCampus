@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\RegistrationController;
+use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -48,7 +50,10 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     // Dashboard
     Route::get('/dashboard/stats', [\App\Http\Controllers\DashboardController::class, 'stats']);
 
-    // Future module routes will be added here:
+    // Marketplace
+    Route::get('/marketplace/requests/my', [MarketplaceListingController::class, 'myRequests']);
+    Route::post('/marketplace/{id}/request', [MarketplaceListingController::class, 'storeRequest']);
+    Route::put('/marketplace/requests/{id}/accept', [MarketplaceListingController::class, 'acceptRequest']);
     Route::post('marketplace/{id}/favorite', [MarketplaceListingController::class, 'toggleFavorite']);
     Route::apiResource('marketplace', MarketplaceListingController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
 
@@ -62,9 +67,11 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     // - Resource Hub
     // - Roommate Finder
     // - Lost & Found
-    // - Announcements
     // - Notifications
     // - Reports
+
+    // Announcements (read-only for students)
+    Route::get('/announcements', [AnnouncementController::class, 'index']);
 });
 
 // ──────────────────────────────────────────────
@@ -78,6 +85,13 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class, 'role:admin'])
         Route::get('/registrations/{user}', [RegistrationController::class, 'show']);
         Route::post('/registrations/{user}/approve', [RegistrationController::class, 'approve']);
         Route::post('/registrations/{user}/reject', [RegistrationController::class, 'reject']);
+
+        // Announcement management
+        Route::get('/announcements', [AdminAnnouncementController::class, 'index']);
+        Route::post('/announcements', [AdminAnnouncementController::class, 'store']);
+        Route::put('/announcements/{id}', [AdminAnnouncementController::class, 'update']);
+        Route::delete('/announcements/{id}', [AdminAnnouncementController::class, 'destroy']);
+        Route::post('/announcements/{id}/toggle-pin', [AdminAnnouncementController::class, 'togglePin']);
     });
 
 // ──────────────────────────────────────────────
