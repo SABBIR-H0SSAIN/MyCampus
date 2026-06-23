@@ -67,6 +67,8 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     // - Resource Hub
     // - Roommate Finder
     // - Lost & Found
+    Route::apiResource('lost-found', \App\Http\Controllers\LostAndFoundController::class)->only(['index', 'store', 'update', 'destroy']);
+    
     // - Notifications
     // - Reports
 

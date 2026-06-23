@@ -73,7 +73,7 @@ export function AppLayout() {  const { user, roles, logout } = useAuth();
           {nav.map((n) => <NavItem key={n.to} {...n} />)}
         </nav>
         <div className="relative border-t border-border p-3">
-          <button onClick={() => setProfileMenuOpen(!profileMenuOpen)} className="w-full flex items-center gap-3 rounded-md p-2 hover:bg-secondary text-left">
+          <button onClick={() => setProfileMenuOpen(!profileMenuOpen)} className="w-full flex items-center gap-3 rounded-md p-2 hover:bg-secondary text-left cursor-pointer">
             <img src={avatar} alt="" className="h-9 w-9 rounded-full bg-secondary" />
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium">{user?.name}</div>
@@ -86,17 +86,17 @@ export function AppLayout() {  const { user, roles, logout } = useAuth();
           
           {profileMenuOpen && (
             <div className="absolute bottom-full left-3 right-3 mb-2 rounded-md border border-border bg-surface p-1 shadow-lg">
-              <Link to="/app/profile" onClick={() => setProfileMenuOpen(false)} className="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-secondary">
+              <Link to="/app/profile" onClick={() => setProfileMenuOpen(false)} className="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-secondary cursor-pointer">
                 Profile
               </Link>
-              <button onClick={() => { setProfileMenuOpen(false); logout(); }} className="w-full text-left rounded-md px-3 py-2 text-sm text-blood hover:bg-secondary">
+              <button onClick={() => { setProfileMenuOpen(false); logout(); }} className="w-full text-left rounded-md px-3 py-2 text-sm text-blood hover:bg-secondary cursor-pointer">
                 Logout
               </button>
             </div>
           )}
 
           {roles?.includes('admin') && (
-            <Link to="/admin" className="mt-2 block rounded-md border border-dashed border-border px-3 py-2 text-center text-[11px] font-medium text-muted-foreground hover:text-foreground">
+            <Link to="/admin" className="mt-2 block rounded-md border border-dashed border-border px-3 py-2 text-center text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer">
               Switch to Admin →
             </Link>
           )}
@@ -120,14 +120,14 @@ export function AppLayout() {  const { user, roles, logout } = useAuth();
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/app/marketplace/new" className="hidden h-10 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 sm:inline-flex">
+          <Link to="/app/marketplace/new" className="hidden h-10 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 sm:inline-flex cursor-pointer">
             <Plus className="h-4 w-4" /> New
           </Link>
-          <Link to="/app/notifications" className="relative grid h-10 w-10 place-items-center rounded-md border border-border bg-surface hover:bg-secondary" aria-label="Notifications">
+          <Link to="/app/notifications" className="relative grid h-10 w-10 place-items-center rounded-md border border-border bg-surface hover:bg-secondary cursor-pointer" aria-label="Notifications">
             <Bell className="h-4 w-4" />
             {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blood ring-2 ring-background" />}
           </Link>
-          <Link to="/app/profile" className="lg:hidden">
+          <Link to="/app/profile" className="lg:hidden cursor-pointer">
             <img src={avatar} alt="profile" className="h-9 w-9 rounded-full bg-secondary outline outline-1 outline-border" />
           </Link>
         </div>

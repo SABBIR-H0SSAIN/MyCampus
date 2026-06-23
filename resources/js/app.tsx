@@ -18,6 +18,7 @@ import NewListing from './pages/app/marketplace-new';
 import Exchange from './pages/app/exchange';
 import NewExchange from './pages/app/exchange-new';
 import AnnouncementsPage from './pages/app/announcements';
+import LostAndFound from './pages/app/lost-found';
 import { AdminLayout } from './components/layout/AdminLayout';
 import AdminDashboard from './pages/admin/index';
 import RegistrationsQueue from './pages/admin/registrations';
@@ -60,7 +61,7 @@ function App() {
                 <Route path="blood" element={<div className="p-8 text-center">Blood Network Placeholder</div>} />
                 <Route path="resources" element={<div className="p-8 text-center">Resources Placeholder</div>} />
                 <Route path="roommates" element={<div className="p-8 text-center">Roommates Placeholder</div>} />
-                <Route path="lost-found" element={<div className="p-8 text-center">Lost & Found Hub Placeholder</div>} />
+                <Route path="lost-found" element={<LostAndFound />} />
                 <Route path="announcements" element={<AnnouncementsPage />} />
                 <Route path="notifications" element={<div className="p-8 text-center">Notifications Placeholder</div>} />
                 <Route path="profile" element={<ProfilePage />} />
