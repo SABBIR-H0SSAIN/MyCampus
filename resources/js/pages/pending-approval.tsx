@@ -30,7 +30,7 @@ export default function PendingApproval() {
             </ul>
           </div>
           <div className="pt-4">
-            <Link to="/login" className="text-sm font-medium text-primary hover:underline">
+            <Link to="/login" className="text-sm font-medium text-primary hover:underline cursor-pointer">
               Return to Login
             </Link>
           </div>

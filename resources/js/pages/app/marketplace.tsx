@@ -137,11 +137,11 @@ function RequestBuyModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface shadow-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="font-semibold text-lg">Request to Buy</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground cursor-pointer"><X className="h-5 w-5 cursor-pointer" /></button>
         </div>
         <div className="flex items-center gap-4 p-3 bg-secondary rounded-xl mb-6">
           <img src={listing.image} alt="" className="h-12 w-12 rounded-lg object-cover" />
@@ -196,14 +196,14 @@ function ResponsesModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className="relative w-full max-w-xl max-h-[85vh] flex flex-col rounded-2xl border border-border bg-surface shadow-2xl">
         <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
           <div>
             <h3 className="font-semibold text-lg">Purchase Requests</h3>
             <p className="text-xs text-muted-foreground mt-0.5">For: {listing.title}</p>
           </div>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground cursor-pointer"><X className="h-4 w-4 cursor-pointer" /></button>
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -265,7 +265,7 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4" role="dialog" aria-modal="true">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm cursor-pointer" onClick={onClose} />
 
       <div className="relative z-10 flex w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl sm:rounded-2xl border border-border bg-surface shadow-2xl max-h-[92dvh]">
         {/* Header */}
@@ -278,11 +278,11 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
               </Btn>
             )}
             {listing.selfPosted && (
-                <button onClick={() => { onClose(); onDelete(listing.id); }} className="grid h-8 w-8 place-items-center rounded-md text-blood hover:bg-blood/10">
+                <button onClick={() => { onClose(); onDelete(listing.id); }} className="grid h-8 w-8 place-items-center rounded-md text-blood hover:bg-blood/10 cursor-pointer">
                     <Trash2 className="h-4 w-4" />
                 </button>
             )}
-            <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-secondary">
+            <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-secondary cursor-pointer">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -301,15 +301,15 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
               )}
               {imgs.length > 1 && (
                 <>
-                  <button onClick={() => setImgIdx(i => (i - 1 + imgs.length) % imgs.length)} className="absolute left-2 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full bg-background/80 hover:bg-background">
+                  <button onClick={() => setImgIdx(i => (i - 1 + imgs.length) % imgs.length)} className="absolute left-2 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full bg-background/80 hover:bg-background cursor-pointer">
                     <ChevronLeft className="h-4 w-4" />
                   </button>
-                  <button onClick={() => setImgIdx(i => (i + 1) % imgs.length)} className="absolute right-2 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full bg-background/80 hover:bg-background">
+                  <button onClick={() => setImgIdx(i => (i + 1) % imgs.length)} className="absolute right-2 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-full bg-background/80 hover:bg-background cursor-pointer">
                     <ChevronRight className="h-4 w-4" />
                   </button>
                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
                     {imgs.map((_, i) => (
-                      <button key={i} onClick={() => setImgIdx(i)} className={cn("h-1.5 rounded-full transition-all", i === imgIdx ? "w-4 bg-primary" : "w-1.5 bg-white/60")} />
+                      <button key={i} onClick={() => setImgIdx(i)} className={cn("h-1.5 rounded-full transition-all cursor-pointer", i === imgIdx ? "w-4 bg-primary" : "w-1.5 bg-white/60")} />
                     ))}
                   </div>
                 </>
@@ -318,7 +318,7 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
             {imgs.length > 1 && (
               <div className="flex gap-2 p-2 overflow-x-auto">
                 {imgs.map((src, i) => (
-                  <button key={i} onClick={() => setImgIdx(i)} className={cn("h-12 w-12 shrink-0 overflow-hidden rounded-md border-2 transition", i === imgIdx ? "border-primary" : "border-border")}>
+                  <button key={i} onClick={() => setImgIdx(i)} className={cn("h-12 w-12 shrink-0 overflow-hidden rounded-md border-2 transition cursor-pointer", i === imgIdx ? "border-primary" : "border-border")}>
                     <img src={src} alt="" className="h-full w-full object-cover" />
                   </button>
                 ))}
@@ -383,12 +383,12 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
                       <CheckCircle className="h-4 w-4 mr-2" /> Requested
                     </Btn>
                   ) : (
-                    <Btn className="w-full" onClick={() => { onClose(); onRequestBuy(listing); }}>
+                    <Btn className="w-full cursor-pointer" onClick={() => { onClose(); onRequestBuy(listing); }}>
                       <MessageSquare className="h-4 w-4 mr-2" /> Request to Buy
                     </Btn>
                   )
                 ) : (
-                  <Btn variant="outline" className="w-full bg-primary/5 text-primary hover:bg-primary/10" onClick={() => { onClose(); onViewResponses(listing); }}>
+                  <Btn variant="outline" className="w-full bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer" onClick={() => { onClose(); onViewResponses(listing); }}>
                     <MessageSquare className="h-4 w-4 mr-2" /> View Responses {listing.responses && listing.responses.length > 0 && <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] leading-none">{listing.responses.length}</span>}
                   </Btn>
                 )}
@@ -412,7 +412,7 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
                     <Heart className={cn("h-4 w-4", listing.favorites && "fill-current")} />
                     {listing.favorites ? "Saved" : "Save"}
                   </button>
-                  <button className="flex flex-1 items-center justify-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm font-medium hover:bg-secondary transition">
+                  <button className="flex flex-1 items-center justify-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm font-medium hover:bg-secondary transition cursor-pointer">
                     <Flag className="h-4 w-4" /> Report
                   </button>
                 </div>
@@ -466,11 +466,11 @@ function EditModal({ listing, onClose, onSave }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className="relative z-10 w-full max-w-2xl overflow-hidden rounded-t-2xl sm:rounded-2xl border border-border bg-surface shadow-2xl max-h-[92dvh] flex flex-col">
         <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
           <p className="font-semibold">Edit listing</p>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-secondary">
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-secondary cursor-pointer">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -488,7 +488,7 @@ function EditModal({ listing, onClose, onSave }: {
               {previews.map((src, i) => (
                 <div key={i} className="relative aspect-square overflow-hidden rounded-lg border border-border bg-secondary">
                   <img src={src} alt="" className="h-full w-full object-cover" />
-                  <button type="button" onClick={() => setPreviews(p => p.filter((_, idx) => idx !== i))} className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-background/90 text-muted-foreground hover:text-blood">
+                  <button type="button" onClick={() => setPreviews(p => p.filter((_, idx) => idx !== i))} className="absolute right-0.5 top-0.5 grid h-5 w-5 place-items-center rounded-full bg-background/90 text-muted-foreground hover:text-blood cursor-pointer">
                     <X className="h-3 w-3" />
                   </button>
                 </div>
@@ -565,7 +565,7 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
           <img src={listing.image} alt={listing.title} loading="lazy" className="h-full w-full object-cover" />
           {listing.sold && <div className="absolute inset-0 grid place-items-center bg-background/70"><Badge variant="outline">Sold</Badge></div>}
         </div>
-        <div className="flex flex-1 items-start justify-between gap-3 min-w-0" onClick={e => e.stopPropagation()}>
+        <div className="flex flex-1 items-start justify-between gap-3 min-w-0 cursor-pointer" onClick={e => e.stopPropagation()}>
           <div className="min-w-0 cursor-pointer" onClick={() => onClick(listing)}>
             <p className="truncate text-sm font-semibold">{listing.title}</p>
             <p className="font-mono text-sm font-bold text-primary mt-0.5">৳ {listing.price.toLocaleString()}</p>
@@ -576,14 +576,14 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
             {/* Seller row */}
             <div className="mt-1.5 flex items-center gap-1.5">
               <img src={listing.sellerAvatar} alt="" className="h-4 w-4 rounded-full border border-border bg-secondary" />
-              <Link to="/app/profile" onClick={e => e.stopPropagation()} className="font-mono text-[10px] text-muted-foreground hover:text-primary transition">
+              <Link to="/app/profile" onClick={e => e.stopPropagation()} className="font-mono text-[10px] text-muted-foreground hover:text-primary transition cursor-pointer">
                 {listing.seller} · {listing.department}
               </Link>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
             {listing.selfPosted && onEdit && !listing.sold && (
-              <button onClick={e => { e.stopPropagation(); onEdit(listing); }} className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="Edit">
+              <button onClick={e => { e.stopPropagation(); onEdit(listing); }} className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer" aria-label="Edit">
                 <Edit3 className="h-3.5 w-3.5" />
               </button>
             )}
@@ -643,9 +643,9 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
           <span className="flex items-center gap-1 text-[11px] text-muted-foreground"><MapPin className="h-3 w-3" />{listing.location}</span>
         </div>
         {/* Seller row */}
-        <div className="flex items-center gap-1.5 pt-0.5" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-1.5 pt-0.5 cursor-pointer" onClick={e => e.stopPropagation()}>
           <img src={listing.sellerAvatar} alt="" className="h-4 w-4 rounded-full border border-border bg-secondary" />
-          <Link to="/app/profile" className="font-mono text-[10px] text-muted-foreground hover:text-primary transition truncate">
+          <Link to="/app/profile" className="font-mono text-[10px] text-muted-foreground hover:text-primary transition truncate cursor-pointer">
             {listing.seller} · {listing.department}
           </Link>
         </div>
@@ -875,7 +875,7 @@ export default function Marketplace() {
         <div className="rounded-xl border border-border bg-surface p-4 space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Filter options</p>
-            <button onClick={() => { setSelectedCategory("All"); setSelectedCondition("All"); }} className="text-xs text-muted-foreground hover:text-foreground transition">Reset all</button>
+            <button onClick={() => { setSelectedCategory("All"); setSelectedCondition("All"); }} className="text-xs text-muted-foreground hover:text-foreground transition cursor-pointer">Reset all</button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {([

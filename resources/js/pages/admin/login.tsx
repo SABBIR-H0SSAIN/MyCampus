@@ -111,7 +111,7 @@ export default function AdminLogin() {
           </Btn>
           
           <p className="pt-2 text-center text-xs text-muted-foreground">
-            Student? <Link to="/login" className="font-medium text-primary hover:underline">Go to student login</Link>
+            Student? <Link to="/login" className="font-medium text-primary hover:underline cursor-pointer">Go to student login</Link>
           </p>
         </form>
       </div>

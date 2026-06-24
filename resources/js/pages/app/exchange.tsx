@@ -46,11 +46,11 @@ function EditExchangeModal({ post, onClose, onSave, isPending }: { post: Exchang
   const [form, setForm] = useState({ offering: post.offering, desire: post.desire, description: post.description, phone: post.phone });
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-surface shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
         <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
           <h3 className="font-semibold text-lg">Edit Exchange Post</h3>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground cursor-pointer"><X className="h-4 w-4 cursor-pointer" /></button>
         </div>
         <form className="overflow-y-auto p-4 space-y-4" onSubmit={(e) => { e.preventDefault(); onSave(form); }}>
           <Field label="Offering" required><Input value={form.offering} onChange={e => setForm({ ...form, offering: e.target.value })} required /></Field>
@@ -70,14 +70,14 @@ function EditExchangeModal({ post, onClose, onSave, isPending }: { post: Exchang
 function ResponsesModal({ post, onClose, onAccept, isPending }: { post: ExchangeListing, onClose: () => void, onAccept: (reqId: string) => void, isPending: boolean }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className="relative z-10 w-full max-w-2xl rounded-2xl border border-border bg-surface shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
         <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
           <div>
             <h3 className="font-semibold text-lg flex items-center gap-2">Exchange Responses <Badge variant="primary">{post.responses.length}</Badge></h3>
             <p className="text-sm text-muted-foreground mt-1">For: {post.offering} ↔ {post.desire}</p>
           </div>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground self-start"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground self-start cursor-pointer"><X className="h-4 w-4 cursor-pointer" /></button>
         </div>
         <div className="overflow-y-auto p-4 space-y-4 bg-background/50">
           {post.responses.length === 0 ? (
@@ -108,7 +108,7 @@ function ResponsesModal({ post, onClose, onAccept, isPending }: { post: Exchange
                     <Phone className="h-4 w-4" /> {res.responderPhone}
                   </a>
                   {res.status === "pending" && post.status !== "Completed" && (
-                    <Btn size="sm" onClick={() => onAccept(res.id)} disabled={isPending}><CheckCircle className="h-4 w-4" /> {isPending ? "Accepting..." : "Accept Offer"}</Btn>
+                    <Btn size="sm" onClick={() => onAccept(res.id)} disabled={isPending}><CheckCircle className="h-4 w-4 cursor-pointer" /> {isPending ? "Accepting..." : "Accept Offer"}</Btn>
                   )}
                 </div>
               </div>
@@ -126,14 +126,14 @@ function RequestExchangeModal({ post, onClose, onSubmit, isPending }: { post: Ex
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className="relative z-10 w-full max-w-lg rounded-2xl border border-border bg-surface shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
         <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
           <div>
             <h3 className="font-semibold text-lg">Request Exchange</h3>
             <p className="text-sm text-muted-foreground mt-1">Offering your item for {post.offering}</p>
           </div>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground cursor-pointer"><X className="h-4 w-4 cursor-pointer" /></button>
         </div>
         <form className="overflow-y-auto p-4 space-y-4" onSubmit={(e) => { e.preventDefault(); onSubmit(msg, phone); }}>
           <Field label="Message to advertiser" required hint="Mention exactly what you have and any condition details.">
@@ -169,7 +169,7 @@ function ExchangeDetailsModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer" onClick={onClose} />
       <div className="relative z-10 w-full max-w-4xl rounded-2xl border border-border bg-surface shadow-2xl overflow-hidden flex flex-col max-h-[90dvh]">
         <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
           <div className="flex items-center gap-3">
@@ -177,7 +177,7 @@ function ExchangeDetailsModal({
             <Badge variant={post.status === "Open" ? "success" : post.status === "Pending" ? "warning" : "default"}>{post.status}</Badge>
             {post.selfPosted && <Badge variant="primary">My Post</Badge>}
           </div>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground"><X className="h-4 w-4" /></button>
+          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground cursor-pointer"><X className="h-4 w-4 cursor-pointer" /></button>
         </div>
         <div className="overflow-y-auto p-0">
           <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
@@ -243,17 +243,17 @@ function ExchangeDetailsModal({
                 <div className="pt-6 border-t border-border mt-auto space-y-3">
                   <h4 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Manage Post</h4>
                   <div className="flex flex-col gap-2">
-                    <Btn variant="outline" className="w-full" onClick={() => { onClose(); onViewResponses(); }}>
+                    <Btn variant="outline" className="w-full cursor-pointer" onClick={() => { onClose(); onViewResponses(); }}>
                       <MessageSquare className="h-4 w-4 mr-2" /> 
                       View Responses {post.responses.length > 0 && <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] leading-none">{post.responses.length}</span>}
                     </Btn>
                     <div className="flex gap-2">
                       {post.status !== "Completed" && (
-                        <Btn variant="outline" className="flex-1" onClick={() => { onClose(); onEdit(); }}>
+                        <Btn variant="outline" className="flex-1 cursor-pointer" onClick={() => { onClose(); onEdit(); }}>
                           <Edit3 className="h-4 w-4 mr-2" /> Edit Post
                         </Btn>
                       )}
-                      <Btn variant="outline" className="flex-1 text-blood border-blood/20 hover:bg-blood/10" onClick={() => { onClose(); onDelete(); }} disabled={isDeleting}>
+                      <Btn variant="outline" className="flex-1 text-blood border-blood/20 hover:bg-blood/10 cursor-pointer" onClick={() => { onClose(); onDelete(); }} disabled={isDeleting}>
                         <Trash2 className="h-4 w-4 mr-2" /> Delete
                       </Btn>
                     </div>
@@ -464,16 +464,16 @@ export default function Exchange() {
 
                     {e.selfPosted ? (
                       <div className="flex gap-2">
-                        <Btn variant="outline" size="sm" className="flex-1" onClick={() => setViewingResponses(e)}>
+                        <Btn variant="outline" size="sm" className="flex-1 cursor-pointer" onClick={() => setViewingResponses(e)}>
                           <MessageSquare className="h-3.5 w-3.5" />
                           Responses {e.responses.length > 0 && <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] leading-none">{e.responses.length}</span>}
                         </Btn>
                         {e.status !== "Completed" && (
-                          <button className="grid h-9 w-9 place-items-center rounded-md border border-border text-muted-foreground hover:bg-secondary hover:text-foreground transition" onClick={() => setEditingPost(e)}>
+                          <button className="grid h-9 w-9 place-items-center rounded-md border border-border text-muted-foreground hover:bg-secondary hover:text-foreground transition cursor-pointer" onClick={() => setEditingPost(e)}>
                             <Edit3 className="h-4 w-4" />
                           </button>
                         )}
-                        <button className="grid h-9 w-9 place-items-center rounded-md border border-blood/20 text-blood hover:bg-blood/10 transition" onClick={() => handleDelete(e.id)} disabled={deleteMutation.isPending}>
+                        <button className="grid h-9 w-9 place-items-center rounded-md border border-blood/20 text-blood hover:bg-blood/10 transition cursor-pointer" onClick={() => handleDelete(e.id)} disabled={deleteMutation.isPending}>
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -484,7 +484,7 @@ export default function Exchange() {
                             <CheckCircle className="h-4 w-4" /> Requested ({myReq.status})
                           </Btn>
                         ) : e.status === "Open" && (
-                          <Btn size="sm" className="w-full" onClick={() => setRequestingPost(e)}>Request Exchange</Btn>
+                          <Btn size="sm" className="w-full cursor-pointer" onClick={() => setRequestingPost(e)}>Request Exchange</Btn>
                         )
                       )
                     )}

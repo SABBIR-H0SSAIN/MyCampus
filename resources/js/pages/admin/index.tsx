@@ -69,14 +69,14 @@ export default function AdminDashboard() {
           <div className="p-4 flex items-center justify-center text-sm text-muted-foreground h-48">
             Manage pending users in the queue.
           </div>
-          <Link to="/admin/registrations" className="flex items-center justify-center gap-1 border-t border-border p-3 text-xs font-medium text-primary hover:bg-primary-soft/50">Review all <ArrowRight className="h-3 w-3" /></Link>
+          <Link to="/admin/registrations" className="flex items-center justify-center gap-1 border-t border-border p-3 text-xs font-medium text-primary hover:bg-primary-soft/50 cursor-pointer">Review all <ArrowRight className="h-3 w-3 cursor-pointer" /></Link>
         </Card>
       </div>
 
       <Card>
         <div className="flex items-center justify-between border-b border-border p-4">
           <h3 className="flex items-center gap-2 text-sm font-semibold"><Flag className="h-4 w-4 text-blood" /> Recent reports</h3>
-          <Link to="/admin/reports" className="text-xs text-primary hover:underline">View all →</Link>
+          <Link to="/admin/reports" className="text-xs text-primary hover:underline cursor-pointer">View all →</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

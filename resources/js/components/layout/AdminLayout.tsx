@@ -80,11 +80,11 @@ export function AdminLayout() {
         </div>
         <div className="flex items-center gap-2 lg:flex" />
         <div className="flex items-center gap-2">
-          <button className="relative grid h-9 w-9 place-items-center rounded-md border border-sidebar-border bg-sidebar-accent/50 text-sidebar-foreground transition hover:bg-sidebar-accent" aria-label="Notifications">
+          <button className="relative grid h-9 w-9 place-items-center rounded-md border border-sidebar-border bg-sidebar-accent/50 text-sidebar-foreground transition hover:bg-sidebar-accent cursor-pointer" aria-label="Notifications">
             <Bell className="h-4 w-4" />
             <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blood" />
           </button>
-          <button onClick={logout} className="grid h-9 w-9 place-items-center rounded-md border border-sidebar-border bg-sidebar-accent/50 text-blood transition hover:bg-sidebar-accent hover:text-blood" aria-label="Logout">
+          <button onClick={logout} className="grid h-9 w-9 place-items-center rounded-md border border-sidebar-border bg-sidebar-accent/50 text-blood transition hover:bg-sidebar-accent hover:text-blood cursor-pointer" aria-label="Logout">
             <LogOut className="h-4 w-4" />
           </button>
           <div className="h-9 w-9 rounded-full bg-sidebar-accent" />

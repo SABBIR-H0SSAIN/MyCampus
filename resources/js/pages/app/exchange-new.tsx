@@ -77,7 +77,7 @@ export default function NewExchange() {
                 <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border bg-secondary group">
                   <img src={offerImage} alt="Offering" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button type="button" onClick={() => { setOfferImage(null); setOfferFile(null); }} className="h-10 w-10 bg-background rounded-full flex items-center justify-center text-blood hover:bg-surface shadow-sm transition-transform hover:scale-110">
+                    <button type="button" onClick={() => { setOfferImage(null); setOfferFile(null); }} className="h-10 w-10 bg-background rounded-full flex items-center justify-center text-blood hover:bg-surface shadow-sm transition-transform hover:scale-110 cursor-pointer">
                       <X className="h-5 w-5" />
                     </button>
                   </div>
@@ -126,7 +126,7 @@ export default function NewExchange() {
                 <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border bg-secondary group">
                   <img src={wantImage} alt="Wanted" className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button type="button" onClick={() => { setWantImage(null); setWantFile(null); }} className="h-10 w-10 bg-background rounded-full flex items-center justify-center text-blood hover:bg-surface shadow-sm transition-transform hover:scale-110">
+                    <button type="button" onClick={() => { setWantImage(null); setWantFile(null); }} className="h-10 w-10 bg-background rounded-full flex items-center justify-center text-blood hover:bg-surface shadow-sm transition-transform hover:scale-110 cursor-pointer">
                       <X className="h-5 w-5" />
                     </button>
                   </div>

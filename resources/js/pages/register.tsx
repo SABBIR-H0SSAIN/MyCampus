@@ -47,7 +47,7 @@ export default function Register() {
       <header className="border-b border-border">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
           <Link to="/"><Logo /></Link>
-          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground">Already verified? Sign in</Link>
+          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground cursor-pointer">Already verified? Sign in</Link>
         </div>
       </header>
       <main className="mx-auto max-w-2xl px-4 py-10">

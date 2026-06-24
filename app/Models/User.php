@@ -159,4 +159,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(MarketplaceRequest::class);
     }
+
+    public function lostAndFoundItems()
+    {
+        return $this->hasMany(LostAndFoundItem::class);
+    }
 }

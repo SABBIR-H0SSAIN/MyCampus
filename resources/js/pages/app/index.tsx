@@ -46,7 +46,7 @@ export default function Dashboard() {
 
       {/* Urgent banner */}
       {urgent && (
-        <Link to="/app/blood" className="flex items-center gap-4 rounded-xl border border-blood/30 bg-blood/5 p-4 transition hover:bg-blood/10">
+        <Link to="/app/blood" className="flex items-center gap-4 rounded-xl border border-blood/30 bg-blood/5 p-4 transition hover:bg-blood/10 cursor-pointer">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-blood/15 text-blood"><AlertTriangle className="h-4 w-4" /></div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2"><Badge variant="blood">URGENT</Badge><span className="font-mono text-[11px] text-muted-foreground">{urgent.posted}</span></div>
@@ -72,7 +72,7 @@ export default function Dashboard() {
           {quickActions.map((a) => {
             const Icon = iconMap[a.icon];
             return (
-              <Link key={a.key} to={a.to} className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-surface p-4 transition hover:border-primary/40 hover:bg-primary-soft/30">
+              <Link key={a.key} to={a.to} className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-surface p-4 transition hover:border-primary/40 hover:bg-primary-soft/30 cursor-pointer">
                 <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary-soft text-primary transition group-hover:scale-105"><Icon className="h-4 w-4" /></div>
                 <span className="text-center text-[11px] font-medium leading-tight">{a.label}</span>
               </Link>
@@ -86,7 +86,7 @@ export default function Dashboard() {
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between border-b border-border p-4">
             <h3 className="text-sm font-semibold">Recent activity</h3>
-            <button className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground">View all</button>
+            <button className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground cursor-pointer">View all</button>
           </div>
           <ul className="divide-y divide-border">
             {recentActivity.map((a) => (
@@ -116,7 +116,7 @@ export default function Dashboard() {
                 </li>
               ))}
             </ul>
-            <Link to="/app/notifications" className="block border-t border-border p-3 text-center text-xs font-medium text-primary hover:bg-primary-soft/50">See all</Link>
+            <Link to="/app/notifications" className="block border-t border-border p-3 text-center text-xs font-medium text-primary hover:bg-primary-soft/50 cursor-pointer">See all</Link>
           </Card>
         </div>
       </div>

@@ -96,7 +96,7 @@ export default function Login() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground">Password <span className="text-blood">*</span></span>
-              <Link to="/forgot-password" className="text-[10px] text-primary hover:underline">Forgot?</Link>
+              <Link to="/forgot-password" className="text-[10px] text-primary hover:underline cursor-pointer">Forgot?</Link>
             </div>
             <Input 
               type="password" 
@@ -111,10 +111,10 @@ export default function Login() {
             {isLoading ? "Signing in..." : "Sign in"} <ArrowRight className="h-4 w-4" />
           </Btn>
           <p className="pt-2 text-center text-xs text-muted-foreground">
-            No account? <Link to="/register" className="font-medium text-primary hover:underline">Sign up</Link>
+            No account? <Link to="/register" className="font-medium text-primary hover:underline cursor-pointer">Sign up</Link>
           </p>
           <p className="pt-2 text-center text-[10px] text-muted-foreground">
-            <Link to="/admin/login" className="hover:underline">Admin login</Link>
+            <Link to="/admin/login" className="hover:underline cursor-pointer">Admin login</Link>
           </p>
         </form>
       </div>

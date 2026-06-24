@@ -79,7 +79,7 @@ export default function Profile() {
             <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> {data.email}</span>
             {contactInfo.phone && <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> {contactInfo.phone}</span>}
             {social.github && <a href={social.github} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-foreground transition"><Github className="h-3.5 w-3.5" /> GitHub</a>}
-            {social.linkedin && <a href={social.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-foreground transition"><Linkedin className="h-3.5 w-3.5" /> LinkedIn</a>}
+            {social.linkedin && <a href={social.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-foreground transition cursor-pointer"><Linkedin className="h-3.5 w-3.5 cursor-pointer" /> LinkedIn</a>}
             {social.website && <a href={social.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-foreground transition"><Globe className="h-3.5 w-3.5" /> Website</a>}
           </div>
         </div>
