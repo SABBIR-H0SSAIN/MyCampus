@@ -164,4 +164,29 @@ class User extends Authenticatable
     {
         return $this->hasMany(LostAndFoundItem::class);
     }
+
+    public function bloodRequests()
+    {
+        return $this->hasMany(BloodRequest::class);
+    }
+
+    public function bloodDonationResponses()
+    {
+        return $this->hasMany(BloodDonationResponse::class);
+    }
+
+    public function roommatePosts()
+    {
+        return $this->hasMany(RoommatePost::class);
+    }
+
+    public function roommateRequests()
+    {
+        return $this->hasMany(RoommateRequest::class, 'requester_id');
+    }
+
+    public function resources()
+    {
+        return $this->hasMany(Resource::class);
+    }
 }

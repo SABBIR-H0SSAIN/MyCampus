@@ -25,6 +25,7 @@ class ExchangeController extends Controller
             return [
                 'id' => (string) $post->id,
                 'owner' => $user->name,
+                'ownerRoll' => $user->roll_number,
                 'department' => $departmentStr,
                 'offering' => $post->offering,
                 'desire' => $post->desire,

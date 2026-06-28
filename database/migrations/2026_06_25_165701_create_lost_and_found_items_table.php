@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('location');
             $table->date('date');
+            $table->string('phone');
             $table->json('images')->nullable();
             $table->enum('status', ['active', 'resolved'])->default('active');
             $table->timestamps();

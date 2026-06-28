@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\UserController;
 use App\Http\Controllers\MarketplaceListingController;
+use App\Http\Controllers\RoommateController;
 use App\Http\Middleware\EnsureUserApproved;
 use Illuminate\Support\Facades\Route;
 
@@ -44,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function () {
     // Profile
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'show']);
+    Route::get('/users/{id}/profile', [\App\Http\Controllers\ProfileController::class, 'getUserProfile']);
     Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update']);
     Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'uploadAvatar']);
 
@@ -64,12 +66,27 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     Route::apiResource('exchange', \App\Http\Controllers\ExchangeController::class)->only(['index', 'store', 'update', 'destroy']);
 
     // - Blood Donation
+    Route::post('/blood-requests/{id}/donate', [\App\Http\Controllers\BloodRequestController::class, 'donate']);
+    Route::apiResource('blood-requests', \App\Http\Controllers\BloodRequestController::class)->only(['index', 'store', 'update', 'destroy']);
+
     // - Resource Hub
+    Route::post('/resources/{id}', [\App\Http\Controllers\ResourceController::class, 'update']); // for multipart/form-data
+    Route::apiResource('resources', \App\Http\Controllers\ResourceController::class)->only(['index', 'store', 'destroy']);
+
     // - Roommate Finder
+    Route::apiResource('roommates', RoommateController::class);
+    Route::post('roommates/{id}/request', [RoommateController::class, 'requestRoommate']);
+    Route::get('roommates/{id}/requests', [RoommateController::class, 'getPostRequests']);
+    Route::get('my-roommate-requests', [RoommateController::class, 'getMyRequests']);
+    Route::post('roommate-requests/{id}/respond', [RoommateController::class, 'respondToRequest']);
+
     // - Lost & Found
     Route::apiResource('lost-found', \App\Http\Controllers\LostAndFoundController::class)->only(['index', 'store', 'update', 'destroy']);
     
     // - Notifications
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
+    Route::put('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
+    Route::put('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
     // - Reports
 
     // Announcements (read-only for students)

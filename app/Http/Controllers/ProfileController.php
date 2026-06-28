@@ -13,8 +13,37 @@ class ProfileController extends Controller
      */
     public function show(Request $request)
     {
-        $user = $request->user()->load('profile');
+        $user = $request->user()->load([
+            'profile',
+            'marketplaceListings' => function($q) { $q->latest()->take(10); },
+            'exchangePosts' => function($q) { $q->latest()->take(10); },
+            'resources' => function($q) { $q->latest()->take(10); },
+            'bloodRequests' => function($q) { $q->latest()->take(10); },
+            'roommatePosts' => function($q) { $q->latest()->take(10); },
+        ]);
 
+        return response()->json([
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Get a specific user's profile
+     */
+    public function getUserProfile($id)
+    {
+        $user = \App\Models\User::with([
+            'profile',
+            'marketplaceListings' => function($q) { $q->latest()->take(10); },
+            'exchangePosts' => function($q) { $q->latest()->take(10); },
+            'resources' => function($q) { $q->latest()->take(10); },
+            'bloodRequests' => function($q) { $q->latest()->take(10); },
+            'roommatePosts' => function($q) { $q->latest()->take(10); },
+        ])
+            ->where('id', $id)
+            ->orWhere('roll_number', $id)
+            ->firstOrFail();
+        
         return response()->json([
             'user' => $user,
         ]);

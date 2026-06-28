@@ -30,7 +30,7 @@ class LostAndFoundController extends Controller
                 'reporterAvatar' => $user->profile->avatar_url ?? 'https://api.dicebear.com/9.x/notionists/svg?seed=' . $user->id,
                 'reporterRoll' => $user->roll_number,
                 'department' => $departmentStr,
-                'phone' => $user->profile->phone ?? 'N/A', // Using profile phone or N/A
+                'phone' => $item->phone, // Using the phone number provided in the specific report
                 'selfPosted' => $user->id === $request->user()->id,
                 'postedAt' => $item->created_at->diffForHumans(),
             ];
@@ -48,6 +48,7 @@ class LostAndFoundController extends Controller
             'description' => 'required|string',
             'location' => 'required|string|max:255',
             'date' => 'required|date',
+            'phone' => 'required|string',
             'images.*' => 'image|max:5120',
         ]);
 
@@ -66,6 +67,7 @@ class LostAndFoundController extends Controller
             'description' => $validated['description'],
             'location' => $validated['location'],
             'date' => $validated['date'],
+            'phone' => $validated['phone'],
             'images' => !empty($imagePaths) ? $imagePaths : null,
             'status' => 'active',
         ]);
@@ -83,7 +85,32 @@ class LostAndFoundController extends Controller
 
         $validated = $request->validate([
             'status' => 'sometimes|in:active,resolved',
+            'type' => 'sometimes|in:lost,found',
+            'title' => 'sometimes|string|max:255',
+            'category' => 'sometimes|string',
+            'description' => 'sometimes|string',
+            'location' => 'sometimes|string|max:255',
+            'date' => 'sometimes|date',
+            'phone' => 'sometimes|string',
+            'images.*' => 'image|max:5120',
+            'existingImages' => 'sometimes|array',
+            'existingImages.*' => 'string',
         ]);
+
+        $imagePaths = $request->input('existingImages', []);
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('lost-found', 'public');
+                $imagePaths[] = asset('storage/' . $path);
+            }
+        }
+
+        if (count($imagePaths) > 0 || $request->has('images') || $request->has('existingImages')) {
+            $validated['images'] = !empty($imagePaths) ? $imagePaths : null;
+        }
+        
+        unset($validated['existingImages']);
 
         $item->update($validated);
 

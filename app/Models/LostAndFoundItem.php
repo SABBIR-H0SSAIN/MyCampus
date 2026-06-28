@@ -14,6 +14,7 @@ class LostAndFoundItem extends Model
         'description',
         'location',
         'date',
+        'phone',
         'images',
         'status',
     ];

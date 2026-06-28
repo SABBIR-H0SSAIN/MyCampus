@@ -19,6 +19,9 @@ class DatabaseSeeder extends Seeder
             StudentUserSeeder::class,
             MarketplaceSeeder::class,
             ExchangeSeeder::class,
+            ResourceSeeder::class,
+            BloodRequestSeeder::class,
+            RoommateSeeder::class,
         ]);
     }
 }
