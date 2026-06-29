@@ -52,7 +52,8 @@ function NavItem({ to, label, icon: Icon, exact }: { to: string; label: string; 
   );
 }
 
-export function AppLayout() {  const { user, roles, logout } = useAuth();
+export function AppLayout() {
+  const { user, role, logout } = useAuth();
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -83,7 +84,7 @@ export function AppLayout() {  const { user, roles, logout } = useAuth();
             </div>
             <Settings className="h-4 w-4 text-muted-foreground" />
           </button>
-          
+
           {profileMenuOpen && (
             <div className="absolute bottom-full left-3 right-3 mb-2 rounded-md border border-border bg-surface p-1 shadow-lg">
               <Link to="/app/profile" onClick={() => setProfileMenuOpen(false)} className="block rounded-md px-3 py-2 text-sm text-foreground hover:bg-secondary cursor-pointer">
@@ -95,7 +96,7 @@ export function AppLayout() {  const { user, roles, logout } = useAuth();
             </div>
           )}
 
-          {roles?.includes('admin') && (
+          {user?.role === 'admin' && (
             <Link to="/admin" className="mt-2 block rounded-md border border-dashed border-border px-3 py-2 text-center text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer">
               Switch to Admin →
             </Link>
@@ -120,9 +121,6 @@ export function AppLayout() {  const { user, roles, logout } = useAuth();
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/app/marketplace/new" className="hidden h-10 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90 sm:inline-flex cursor-pointer">
-            <Plus className="h-4 w-4" /> New
-          </Link>
           <Link to="/app/notifications" className="relative grid h-10 w-10 place-items-center rounded-md border border-border bg-surface hover:bg-secondary cursor-pointer" aria-label="Notifications">
             <Bell className="h-4 w-4" />
             {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blood ring-2 ring-background" />}

@@ -17,13 +17,17 @@ import Marketplace from './pages/app/marketplace';
 import NewListing from './pages/app/marketplace-new';
 import Exchange from './pages/app/exchange';
 import NewExchange from './pages/app/exchange-new';
+import BloodNetwork from './pages/app/blood';
+import ResourceHub from './pages/app/resources';
 import AnnouncementsPage from './pages/app/announcements';
 import LostAndFound from './pages/app/lost-found';
+import RoommateFinder from './pages/app/roommates';
 import { AdminLayout } from './components/layout/AdminLayout';
 import AdminDashboard from './pages/admin/index';
 import RegistrationsQueue from './pages/admin/registrations';
 import AdminLogin from './pages/admin/login';
 import AdminAnnouncements from './pages/admin/announcements';
+import NotificationsPage from './pages/app/notifications';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -58,13 +62,14 @@ function App() {
                 <Route path="marketplace/new" element={<NewListing />} />
                 <Route path="exchange" element={<Exchange />} />
                 <Route path="exchange/new" element={<NewExchange />} />
-                <Route path="blood" element={<div className="p-8 text-center">Blood Network Placeholder</div>} />
-                <Route path="resources" element={<div className="p-8 text-center">Resources Placeholder</div>} />
-                <Route path="roommates" element={<div className="p-8 text-center">Roommates Placeholder</div>} />
+                <Route path="blood" element={<BloodNetwork />} />
+                <Route path="resources" element={<ResourceHub />} />
+                <Route path="roommates" element={<RoommateFinder />} />
                 <Route path="lost-found" element={<LostAndFound />} />
                 <Route path="announcements" element={<AnnouncementsPage />} />
-                <Route path="notifications" element={<div className="p-8 text-center">Notifications Placeholder</div>} />
+                <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="profile/:id" element={<ProfilePage />} />
                 <Route path="profile/edit" element={<EditProfile />} />
               </Route>
             </Route>

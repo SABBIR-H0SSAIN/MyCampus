@@ -232,7 +232,7 @@ function ResponsesModal({
                   <a href={`tel:${res.responderPhone}`} className="text-sm font-medium text-primary flex items-center gap-1.5 hover:underline">
                     <Phone className="h-4 w-4" /> {res.responderPhone}
                   </a>
-                  {res.status === "pending" && listing.status !== "Completed" && !listing.sold && (
+                  {res.status === "pending" && !listing.sold && (
                     <Btn size="sm" onClick={() => onAccept(res.id)} disabled={isPending}>
                       <CheckCircle className="h-4 w-4 mr-1.5" /> Accept Buyer
                     </Btn>
@@ -354,20 +354,20 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
             <div className="rounded-xl border border-border bg-background p-3.5">
               <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Seller</p>
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <img src={listing.sellerAvatar} alt={listing.seller} className="h-10 w-10 rounded-full border-2 border-border bg-secondary object-cover" />
+                <Link to={`/app/profile/${listing.sellerRoll}`} onClick={onClose} className="flex items-center gap-3 cursor-pointer group hover:opacity-80 transition-opacity">
+                  <img src={listing.sellerAvatar} alt={listing.seller} className="h-10 w-10 rounded-full border-2 border-border bg-secondary object-cover group-hover:border-primary/50 transition-colors" />
                   <div>
-                    <p className="text-sm font-semibold flex items-center gap-1.5">
+                    <p className="text-sm font-semibold flex items-center gap-1.5 group-hover:text-primary transition-colors">
                       {listing.seller}
                       <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
                     </p>
                     <p className="font-mono text-[11px] text-muted-foreground">{listing.sellerRoll} · {listing.department}</p>
                   </div>
-                </div>
+                </Link>
                 <Link
-                  to="/app/profile"
+                  to={`/app/profile/${listing.sellerRoll}`}
                   onClick={onClose}
-                  className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition"
+                  className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition cursor-pointer"
                 >
                   Profile <ExternalLink className="h-3 w-3" />
                 </Link>
@@ -576,7 +576,7 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
             {/* Seller row */}
             <div className="mt-1.5 flex items-center gap-1.5">
               <img src={listing.sellerAvatar} alt="" className="h-4 w-4 rounded-full border border-border bg-secondary" />
-              <Link to="/app/profile" onClick={e => e.stopPropagation()} className="font-mono text-[10px] text-muted-foreground hover:text-primary transition cursor-pointer">
+              <Link to={`/app/profile/${listing.sellerRoll}`} onClick={e => e.stopPropagation()} className="font-mono text-[10px] text-muted-foreground hover:text-primary transition cursor-pointer">
                 {listing.seller} · {listing.department}
               </Link>
             </div>

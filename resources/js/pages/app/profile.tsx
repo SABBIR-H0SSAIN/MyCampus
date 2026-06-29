@@ -1,30 +1,46 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Badge, Btn, Card, Stat } from "@/components/ui-bits";
 import { Mail, Phone, Github, Linkedin, Pencil, ShieldCheck, Globe } from "lucide-react";
 import api from "@/lib/api";
-import { marketplaceListings, resources, exchangePosts, bloodRequests, roommatePosts } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/AuthContext";
 
 const tabs = ["Listings", "Exchange", "Resources", "Blood", "Roommate"] as const;
 
 export default function Profile() {
   const [tab, setTab] = useState<(typeof tabs)[number]>("Listings");
 
+  const { id } = useParams<{ id?: string }>();
+  const { user: currentUser } = useAuth();
+  
+  const isOwnProfile = !id || (currentUser && id === currentUser.id.toString());
+
   const { data, isLoading } = useQuery({
-    queryKey: ['profile'],
+    queryKey: ['profile', id],
     queryFn: async () => {
-      const res = await api.get('/api/profile');
+      const endpoint = id ? `/api/users/${id}/profile` : '/api/profile';
+      const res = await api.get(endpoint);
       return res.data.user;
     }
   });
 
-  const { data: dashboardStats } = useQuery({
-    queryKey: ['dashboard-stats'],
+  const { data: dashboardStats } = useQuery<{
+    activeListings: number;
+    totalAds: number;
+    sold: number;
+    resources: number;
+    downloads: number;
+    exchanges: number;
+    bloodPosts: number;
+  }>({
+    queryKey: ['dashboard-stats', id],
     queryFn: async () => {
+      if (!isOwnProfile) return null as any;
       const res = await api.get('/api/dashboard/stats');
       return res.data.stats;
-    }
+    },
+    enabled: !!isOwnProfile
   });
 
   if (isLoading || !data) return <div className="p-8 text-center text-muted-foreground">Loading profile...</div>;
@@ -36,6 +52,12 @@ export default function Profile() {
   // Default mock avatar/cover if not present
   const avatar = profile.avatar_path ? `/storage/${profile.avatar_path}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=random`;
   const cover = profile.cover_path ? `/storage/${profile.cover_path}` : "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2000&auto=format&fit=crop";
+
+  const userListings = data.marketplace_listings || [];
+  const userExchanges = data.exchange_posts || [];
+  const userResources = data.resources || [];
+  const userBloodRequests = data.blood_requests || [];
+  const userRoommates = data.roommate_posts || [];
 
   return (
     <div className="space-y-6">
@@ -66,11 +88,13 @@ export default function Profile() {
               </div>
             </div>
             {/* Edit button */}
-            <div className="shrink-0">
-              <Link to="/app/profile/edit">
-                <Btn variant="outline" size="sm"><Pencil className="h-3.5 w-3.5" /> Edit profile</Btn>
-              </Link>
-            </div>
+            {isOwnProfile && (
+              <div className="shrink-0">
+                <Link to="/app/profile/edit">
+                  <Btn variant="outline" size="sm"><Pencil className="h-3.5 w-3.5" /> Edit profile</Btn>
+                </Link>
+              </div>
+            )}
           </div>
           {/* Bio */}
           <p className="mt-4 max-w-2xl text-sm text-muted-foreground">{profile.bio || "No bio added yet."}</p>
@@ -95,8 +119,6 @@ export default function Profile() {
         </div>
       )}
 
-
-
       {/* Tabs */}
       <div>
         <div className="flex flex-wrap gap-1 border-b border-border">
@@ -107,37 +129,78 @@ export default function Profile() {
         <div className="pt-6">
           {tab === "Listings" && (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {marketplaceListings.slice(0,4).map(m => (
-                <Card key={m.id} className="overflow-hidden"><div className="aspect-square bg-secondary"><img src={m.image} className="h-full w-full object-cover" alt="" /></div><div className="p-3"><p className="truncate text-sm font-semibold">{m.title}</p><p className="font-mono text-xs text-primary">৳ {m.price}</p></div></Card>
-              ))}
+              {userListings.length > 0 ? userListings.map((m: any) => (
+                <Card key={m.id} className="overflow-hidden">
+                  <div className="aspect-square bg-secondary">
+                    <img src={m.images?.[0] ? `/storage/${m.images[0]}` : "https://placehold.co/400?text=No+Image"} className="h-full w-full object-cover" alt="" />
+                  </div>
+                  <div className="p-3">
+                    <p className="truncate text-sm font-semibold">{m.title}</p>
+                    <p className="font-mono text-xs text-primary">৳ {m.price}</p>
+                  </div>
+                </Card>
+              )) : (
+                <p className="text-sm text-muted-foreground col-span-full">No listings available.</p>
+              )}
             </div>
           )}
           {tab === "Exchange" && (
             <div className="space-y-3">
-              {exchangePosts.slice(0,3).map(e => (
-                <Card key={e.id} className="flex items-center justify-between p-4"><div><p className="text-sm font-semibold">{e.offering}</p><p className="text-xs text-muted-foreground">wants {e.desire}</p></div><Badge variant={e.status === "Open" ? "success" : "outline"}>{e.status}</Badge></Card>
-              ))}
+              {userExchanges.length > 0 ? userExchanges.map((e: any) => (
+                <Card key={e.id} className="flex items-center justify-between p-4">
+                  <div>
+                    <p className="text-sm font-semibold">{e.offering}</p>
+                    <p className="text-xs text-muted-foreground">wants {e.desire}</p>
+                  </div>
+                  <Badge variant={e.status === "Open" ? "success" : "outline"}>{e.status}</Badge>
+                </Card>
+              )) : (
+                <p className="text-sm text-muted-foreground">No exchange posts available.</p>
+              )}
             </div>
           )}
           {tab === "Resources" && (
             <div className="space-y-3">
-              {resources.slice(0,4).map(r => (
-                <Card key={r.id} className="flex items-center justify-between p-4"><div><Badge variant="primary">{r.type}</Badge><p className="mt-1 text-sm font-semibold">{r.title}</p><p className="font-mono text-[10px] text-muted-foreground">{r.course}</p></div><span className="font-mono text-xs text-muted-foreground">{r.downloads} dl</span></Card>
-              ))}
+              {userResources.length > 0 ? userResources.map((r: any) => (
+                <Card key={r.id} className="flex items-center justify-between p-4">
+                  <div>
+                    <Badge variant="primary">{r.resource_type}</Badge>
+                    <p className="mt-1 text-sm font-semibold">{r.title}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground">{r.course_code}</p>
+                  </div>
+                  <span className="font-mono text-xs text-muted-foreground">{r.downloads || 0} dl</span>
+                </Card>
+              )) : (
+                <p className="text-sm text-muted-foreground">No resources available.</p>
+              )}
             </div>
           )}
           {tab === "Blood" && (
             <div className="space-y-3">
-              {bloodRequests.slice(0,2).map(b => (
-                <Card key={b.id} className="flex items-center gap-3 p-4"><div className="grid h-10 w-10 place-items-center rounded-lg bg-blood/15 font-mono text-sm font-bold text-blood">{b.group}</div><div className="flex-1"><p className="text-sm font-semibold">{b.units} units · {b.hospital}</p><p className="text-[11px] text-muted-foreground">{b.date}</p></div><Badge variant={b.status === "Active" ? "success" : "outline"}>{b.status}</Badge></Card>
-              ))}
+              {userBloodRequests.length > 0 ? userBloodRequests.map((b: any) => (
+                <Card key={b.id} className="flex items-center gap-3 p-4">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-blood/15 font-mono text-sm font-bold text-blood">{b.blood_group}</div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold">{b.units} units · {b.hospital}</p>
+                    <p className="text-[11px] text-muted-foreground">{new Date(b.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <Badge variant={b.status === "Active" ? "success" : "outline"}>{b.status}</Badge>
+                </Card>
+              )) : (
+                <p className="text-sm text-muted-foreground">No blood requests available.</p>
+              )}
             </div>
           )}
           {tab === "Roommate" && (
             <div className="grid gap-3 md:grid-cols-2">
-              {roommatePosts.slice(0,2).map(r => (
-                <Card key={r.id} className="p-4"><p className="text-sm font-semibold">{r.location}</p><p className="text-xs text-muted-foreground">৳ {r.budget}/mo · {r.moveIn}</p></Card>
-              ))}
+              {userRoommates.length > 0 ? userRoommates.map((r: any) => (
+                <Card key={r.id} className="p-4">
+                  <p className="text-sm font-semibold">{r.location}</p>
+                  <p className="text-xs text-muted-foreground">৳ {r.budget}/mo · {new Date(r.move_in_date).toLocaleDateString()}</p>
+                </Card>
+              )) : (
+                <p className="text-sm text-muted-foreground col-span-full">No roommate posts available.</p>
+              )}
             </div>
           )}
         </div>

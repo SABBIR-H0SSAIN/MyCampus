@@ -34,16 +34,16 @@ export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<H
 );
 Select.displayName = "Select";
 
-export const Btn = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "default" | "outline" | "danger", size?: "default" | "sm" | "lg" }>(
+export const Btn = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "default" | "outline" | "danger" | "primary" | "blood", size?: "default" | "sm" | "lg" }>(
   ({ className, variant = "default", size = "default", ...props }, ref) => {
     return (
       <button
         ref={ref}
         className={cn(
           "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-          variant === "default" && "bg-primary text-primary-foreground hover:bg-primary/90",
+          (variant === "default" || variant === "primary") && "bg-primary text-primary-foreground hover:bg-primary/90",
           variant === "outline" && "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-          variant === "danger" && "bg-blood text-white hover:bg-blood/90",
+          (variant === "danger" || variant === "blood") && "bg-blood text-white hover:bg-blood/90",
           size === "default" && "h-10 px-4 py-2",
           size === "sm" && "h-9 rounded-md px-3",
           size === "lg" && "h-11 rounded-md px-8",

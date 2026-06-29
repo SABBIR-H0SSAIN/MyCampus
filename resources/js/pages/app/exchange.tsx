@@ -204,11 +204,11 @@ function ExchangeDetailsModal({
               <div className="space-y-3 pt-4 border-t border-border">
                 <h4 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Advertiser Info</h4>
                 <div className="flex items-center justify-between bg-surface rounded-lg p-3 border border-border">
-                  <div>
-                    <p className="font-medium">{post.owner}</p>
+                  <Link to={`/app/profile/${(post as any).ownerRoll}`} onClick={onClose} className="flex flex-col group hover:opacity-80 transition-opacity cursor-pointer">
+                    <p className="font-medium group-hover:text-primary transition-colors">{post.owner}</p>
                     <p className="text-xs text-muted-foreground">{post.department}</p>
-                  </div>
-                  <a href={`tel:${post.phone}`} className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline bg-primary/10 px-3 py-1.5 rounded-md">
+                  </Link>
+                  <a href={`tel:${post.phone}`} className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline bg-primary/10 px-3 py-1.5 rounded-md cursor-pointer">
                     <Phone className="h-4 w-4" /> Call
                   </a>
                 </div>

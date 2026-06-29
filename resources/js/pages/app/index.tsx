@@ -12,23 +12,23 @@ const iconMap: Record<string, any> = { Tag, FileUp, RefreshCw, Droplet, Home, Us
 export default function Dashboard() {
   const { user } = useAuth();
 
-  const { data: realStats, isLoading } = useQuery({
-    queryKey: ['dashboard-stats'],
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard-data'],
     queryFn: async () => {
       const res = await api.get('/api/dashboard/stats');
-      return res.data.stats;
+      return res.data;
     }
   });
 
-  const unreadNotifs = notifications.filter((n) => n.unread);
   const earnedBadges = badges.filter((b) => b.earned);
-  const urgent = bloodRequests.find((b) => b.emergency && b.status === "Active");
+  
+  const currentStats = data?.stats || stats;
+  const urgent = data?.urgentBloodRequest || null;
+  const recentActivities = data?.recentActivity || recentActivity;
+  const unreadNotifs = data?.unreadNotifs || [];
 
   // Format rank nicely, or default to Newcomer
   const rank = "Newcomer";
-
-  // Merge real stats with mock fallback while loading
-  const currentStats = realStats || stats;
 
   return (
     <div className="space-y-8">
@@ -89,7 +89,7 @@ export default function Dashboard() {
             <button className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground cursor-pointer">View all</button>
           </div>
           <ul className="divide-y divide-border">
-            {recentActivity.map((a) => (
+            {recentActivities.map((a: any) => (
               <li key={a.id} className="flex items-start gap-3 p-4">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                 <div className="min-w-0 flex-1">
