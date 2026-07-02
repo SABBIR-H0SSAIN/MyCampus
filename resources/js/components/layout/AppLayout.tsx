@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -11,12 +11,14 @@ import {
   Bell,
   User,
   Search,
-  Plus,
   Settings,
   Menu,
   X,
+  Shield,
+  LogOut,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
+import { GlobalSearchBar } from "@/components/layout/GlobalSearchBar";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -40,9 +42,9 @@ function NavItem({ to, label, icon: Icon, exact }: { to: string; label: string; 
     <Link
       to={to}
       className={cn(
-        "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors cursor-pointer",
         active
-          ? "bg-primary-soft text-primary"
+          ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:bg-secondary hover:text-foreground",
       )}
     >
@@ -54,10 +56,31 @@ function NavItem({ to, label, icon: Icon, exact }: { to: string; label: string; 
 
 export function AppLayout() {
   const { user, role, logout } = useAuth();
+  const location = useLocation();
 
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const unread = 3; // Placeholder mock
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileDrawerOpen(false);
+    setMobileSearchOpen(false);
+  }, [location.pathname]);
+
+  // Close profile menu on outside click
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [profileMenuOpen]);
 
   // Mock avatar, since user model doesn't have an avatar field yet
   const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "User")}&background=random`;
@@ -73,7 +96,7 @@ export function AppLayout() {
           <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">Workspace</p>
           {nav.map((n) => <NavItem key={n.to} {...n} />)}
         </nav>
-        <div className="relative border-t border-border p-3">
+        <div className="relative border-t border-border p-3" ref={profileMenuRef}>
           <button onClick={() => setProfileMenuOpen(!profileMenuOpen)} className="w-full flex items-center gap-3 rounded-md p-2 hover:bg-secondary text-left cursor-pointer">
             <img src={avatar} alt="" className="h-9 w-9 rounded-full bg-secondary" />
             <div className="min-w-0 flex-1">
@@ -105,28 +128,28 @@ export function AppLayout() {
       </aside>
 
       {/* Topbar */}
-      <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur lg:pl-72 lg:pr-8">
+      <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-xl lg:pl-72 lg:pr-8">
         <div className="flex items-center gap-3 lg:hidden">
           <Link to="/app"><Logo mark size="md" /></Link>
         </div>
         <div className="hidden flex-1 max-w-md lg:block">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="search"
-              placeholder="Search resources, listings, students…"
-              aria-label="Search"
-              className="h-10 w-full rounded-md border border-input bg-surface pl-9 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
+          <GlobalSearchBar variant="inline" />
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/app/notifications" className="relative grid h-10 w-10 place-items-center rounded-md border border-border bg-surface hover:bg-secondary cursor-pointer" aria-label="Notifications">
+          <button
+            onClick={() => setMobileSearchOpen(true)}
+            className="lg:hidden grid h-10 w-10 place-items-center rounded-xl border border-border bg-surface hover:bg-secondary hover:border-primary/20 transition-all cursor-pointer"
+            aria-label="Search"
+            type="button"
+          >
+            <Search className="h-4 w-4" />
+          </button>
+          <Link to="/app/notifications" className="relative grid h-10 w-10 place-items-center rounded-xl border border-border bg-surface hover:bg-secondary hover:border-primary/20 cursor-pointer transition-all duration-200" aria-label="Notifications">
             <Bell className="h-4 w-4" />
-            {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blood ring-2 ring-background" />}
+            {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blood ring-2 ring-background animate-pulse" />}
           </Link>
           <Link to="/app/profile" className="lg:hidden cursor-pointer">
-            <img src={avatar} alt="profile" className="h-9 w-9 rounded-full bg-secondary outline outline-1 outline-border" />
+            <img src={avatar} alt="profile" className="h-9 w-9 rounded-xl bg-secondary outline outline-1 outline-border hover:outline-primary/30 transition-all duration-200" />
           </Link>
         </div>
       </header>
@@ -138,7 +161,7 @@ export function AppLayout() {
       </main>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-border bg-surface/95 px-2 backdrop-blur lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-border bg-surface/95 px-2 backdrop-blur-xl lg:hidden">
         <MobileNavLink to="/app" label="Home" icon={LayoutDashboard} exact />
         <MobileNavLink to="/app/marketplace" label="Market" icon={ShoppingBag} />
         <MobileNavLink to="/app/resources" label="Library" icon={BookOpen} />
@@ -147,7 +170,7 @@ export function AppLayout() {
         {/* More button */}
         <button
           onClick={() => setMobileDrawerOpen(true)}
-          className="flex h-full flex-1 flex-col items-center justify-center gap-1 text-[10px] font-medium text-muted-foreground"
+          className="flex h-full flex-1 flex-col items-center justify-center gap-1 text-[10px] font-medium text-muted-foreground cursor-pointer active:scale-95 transition-transform"
         >
           <Menu className="h-5 w-5" />
           More
@@ -159,44 +182,111 @@ export function AppLayout() {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden fade-in-backdrop"
             onClick={() => setMobileDrawerOpen(false)}
           />
           {/* Slide-up panel */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl border-t border-border bg-surface pb-safe lg:hidden">
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl border-t border-border bg-surface pb-safe lg:hidden slide-up-enter">
+            {/* Drawer handle */}
+            <div className="flex justify-center pt-2 pb-1">
+              <div className="h-1 w-10 rounded-full bg-border" />
+            </div>
+            <div className="flex items-center justify-between border-b border-border px-5 py-3">
               <span className="text-sm font-semibold">Navigation</span>
               <button
                 onClick={() => setMobileDrawerOpen(false)}
-                className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-secondary"
+                className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-secondary cursor-pointer transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-1 p-3">
-              {nav.map((n) => (
-                <Link
-                  key={n.to}
-                  to={n.to}
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
-                    "text-muted-foreground hover:bg-secondary hover:text-foreground",
-                  )}
-                >
-                  <n.icon className="h-4 w-4 shrink-0" />
-                  {n.label}
-                </Link>
-              ))}
+            <div className="grid grid-cols-2 gap-1.5 p-3">
+              {nav.map((n) => {
+                const path = location.pathname;
+                const active = n.exact ? path === n.to : path === n.to || path.startsWith(n.to + "/");
+                return (
+                  <Link
+                    key={n.to}
+                    to={n.to}
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium transition-all duration-200 cursor-pointer",
+                      active
+                        ? "bg-primary/8 text-primary"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                    )}
+                  >
+                    <div className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-lg transition-colors",
+                      active ? "bg-primary text-primary-foreground" : "bg-secondary"
+                    )}>
+                      <n.icon className="h-4 w-4" />
+                    </div>
+                    {n.label}
+                  </Link>
+                );
+              })}
             </div>
-            <div className="border-t border-border p-3">
+            <div className="border-t border-border p-3 space-y-2">
+              {user?.role === 'admin' && (
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="flex items-center justify-between rounded-xl border border-primary/15 bg-gradient-to-r from-primary/5 to-primary-soft/20 p-3 shadow-sm hover:bg-primary-soft/30 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <Shield className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">Go to adminpanel</div>
+                      <div className="text-xs text-muted-foreground">Admin Console</div>
+                    </div>
+                  </div>
+                  <div className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                </Link>
+              )}
               <button
                 onClick={() => { setMobileDrawerOpen(false); logout(); }}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-blood hover:bg-secondary transition-colors"
+                className="w-full flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-blood hover:bg-blood/8 transition-colors cursor-pointer"
               >
-                <X className="h-4 w-4" />
+                <LogOut className="h-4 w-4 shrink-0 text-blood" />
                 Logout
               </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Mobile search modal — full-screen sheet with the global search bar */}
+      {mobileSearchOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden fade-in-backdrop"
+            onClick={() => setMobileSearchOpen(false)}
+          />
+          {/* Top-pinned search sheet */}
+          <div className="fixed inset-x-0 top-0 z-50 max-h-dvh overflow-hidden rounded-b-2xl border-b border-border bg-surface lg:hidden slide-down-enter">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <span className="text-sm font-semibold">Search</span>
+              <button
+                onClick={() => setMobileSearchOpen(false)}
+                className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-secondary cursor-pointer transition-colors"
+                aria-label="Close search"
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {/* Search input + scrollable results */}
+            <div className="px-4 pt-4">
+              <GlobalSearchBar
+                variant="modal"
+                autoFocus
+                onNavigate={() => setMobileSearchOpen(false)}
+              />
             </div>
           </div>
         </>
@@ -213,11 +303,16 @@ function MobileNavLink({ to, label, icon: Icon, exact }: { to: string; label: st
     <Link
       to={to}
       className={cn(
-        "flex h-full flex-1 flex-col items-center justify-center gap-1 text-[10px] font-medium",
+        "flex h-full flex-1 flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors cursor-pointer",
         active ? "text-primary" : "text-muted-foreground",
       )}
     >
-      <Icon className="h-5 w-5" />
+      <div className={cn(
+        "flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-200",
+        active ? "bg-primary/10" : ""
+      )}>
+        <Icon className="h-4.5 w-4.5" />
+      </div>
       {label}
     </Link>
   );
