@@ -6,9 +6,7 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    /**
-     * Get the dashboard statistics for the authenticated user
-     */
+    // Get dashboard stats
     public function stats(Request $request)
     {
         $user = $request->user();
