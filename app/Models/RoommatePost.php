@@ -17,11 +17,13 @@ class RoommatePost extends Model
         'description',
         'contact',
         'status',
+        'images',
     ];
 
     protected $casts = [
         'lifestyle' => 'array',
         'move_in_date' => 'date',
+        'images' => 'array',
     ];
 
     public function user()

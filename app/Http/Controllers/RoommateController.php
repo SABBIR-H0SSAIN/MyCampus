@@ -37,9 +37,18 @@ class RoommateController extends Controller
             'looking_for' => 'nullable|string',
             'description' => 'required|string',
             'contact' => 'required|string|max:255',
+            'images' => 'nullable|array',
+            'images.*' => 'image|max:5120',
         ]);
 
-        $post = new RoommatePost($validated);
+        $imagePaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $imagePaths[] = '/storage/' . $file->store('roommates', 'public');
+            }
+        }
+
+        $post = new RoommatePost(array_merge($validated, ['images' => $imagePaths]));
         $post->user_id = $request->user()->id;
         $post->save();
 
@@ -64,9 +73,18 @@ class RoommateController extends Controller
             'description' => 'sometimes|string',
             'contact' => 'sometimes|string|max:255',
             'status' => 'sometimes|string|in:Open,Closed',
+            'images' => 'nullable|array',
+            'images.*' => 'image|max:5120',
         ]);
 
-        $post->update($validated);
+        $imagePaths = $post->images ?? [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $imagePaths[] = '/storage/' . $file->store('roommates', 'public');
+            }
+        }
+
+        $post->update(array_merge($validated, ['images' => $imagePaths]));
 
         return response()->json($post);
     }
@@ -75,7 +93,7 @@ class RoommateController extends Controller
     {
         $post = RoommatePost::findOrFail($id);
 
-        if ($post->user_id !== $request->user()->id && $request->user()->getRoleNames()->first() !== 'admin') {
+        if ($post->user_id !== $request->user()->id && $request->user()->role !== 'admin') {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

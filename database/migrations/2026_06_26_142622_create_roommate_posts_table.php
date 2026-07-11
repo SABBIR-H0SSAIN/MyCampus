@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('looking_for')->nullable();
             $table->text('description');
             $table->string('contact');
+            $table->json('images')->nullable();
             $table->string('status')->default('Open'); // Open, Closed
             $table->timestamps();
         });
