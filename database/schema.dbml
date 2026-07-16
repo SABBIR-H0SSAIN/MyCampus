@@ -1,0 +1,241 @@
+// DBML (Database Markup Language) Schema Definition
+// Excludes Laravel utility infrastructure tables (cache, jobs, sessions, failed_jobs, tokens, etc.)
+// Includes custom app tables and the fully defined users table
+
+Table users {
+  id bigint [pk, increment]
+  name varchar [not null]
+  email varchar [unique, not null]
+  email_verified_at timestamp [null]
+  password varchar [not null]
+  roll_number varchar [unique, not null]
+  department varchar [not null]
+  batch integer [not null]
+  gender varchar [not null]
+  blood_group varchar(10) [null]
+  phone varchar [null]
+  role varchar [default: 'student', not null]
+  registration_status varchar [default: 'pending', not null]
+  student_id_card_path varchar [not null]
+  rejection_reason varchar [null]
+  approved_at timestamp [null]
+  approved_by bigint [null]
+  remember_token varchar [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    approved_by
+  }
+}
+
+Table profiles {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  avatar_path varchar [null]
+  cover_path varchar [null]
+  bio text [null]
+  contact_info json [null]
+  social_links json [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table marketplace_listings {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  title varchar [not null]
+  description text [null]
+  price integer [not null]
+  condition varchar [not null]
+  category varchar [not null]
+  location varchar [not null]
+  phone varchar [not null]
+  images json [null]
+  views bigint [default: 0, not null]
+  is_sold boolean [default: false, not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table marketplace_favorites {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  marketplace_listing_id bigint [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table exchange_posts {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  offering varchar [not null]
+  desire varchar [not null]
+  description text [null]
+  phone varchar [not null]
+  images json [null]
+  status varchar [default: 'Open', not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table exchange_requests {
+  id bigint [pk, increment]
+  exchange_post_id bigint [not null]
+  user_id bigint [not null]
+  message text [not null]
+  phone varchar [not null]
+  status varchar [default: 'pending', not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table marketplace_requests {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  marketplace_listing_id bigint [not null]
+  message text [not null]
+  phone varchar [not null]
+  status varchar [default: 'pending', not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table announcements {
+  id bigint [pk, increment]
+  created_by bigint [not null]
+  title varchar [not null]
+  body text [not null]
+  category varchar [default: 'Academic', not null]
+  is_pinned boolean [default: false, not null]
+  published_at timestamp [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table lost_and_found_items {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  type varchar [not null] // 'lost' or 'found'
+  title varchar [not null]
+  category varchar [not null]
+  description text [not null]
+  location varchar [not null]
+  date date [not null]
+  phone varchar [not null]
+  images json [null]
+  status varchar [default: 'active', not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table blood_requests {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  blood_group varchar [not null]
+  units integer [not null]
+  hospital varchar [not null]
+  date_time datetime [not null]
+  contact varchar [not null]
+  priority varchar [default: 'Standard', not null]
+  notes text [null]
+  status varchar [default: 'Active', not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table blood_donation_responses {
+  id bigint [pk, increment]
+  blood_request_id bigint [not null]
+  user_id bigint [not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (blood_request_id, user_id) [unique]
+  }
+}
+
+Table resources {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  title varchar [not null]
+  description text [null]
+  department varchar [not null]
+  course_code varchar [not null]
+  semester varchar [not null]
+  academic_year varchar [null]
+  resource_type varchar [not null]
+  file_path varchar [not null]
+  file_name varchar [not null]
+  file_size varchar [not null]
+  external_links json [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table roommate_posts {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  title varchar [not null]
+  location varchar [not null]
+  budget integer [not null]
+  move_in_date date [not null]
+  lifestyle json [null]
+  looking_for text [null]
+  description text [not null]
+  contact varchar [not null]
+  images json [null]
+  status varchar [default: 'Open', not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table roommate_requests {
+  id bigint [pk, increment]
+  roommate_post_id bigint [not null]
+  requester_id bigint [not null]
+  message text [not null]
+  contact_number varchar [not null]
+  status varchar [default: 'Pending', not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table reports {
+  id bigint [pk, increment]
+  user_id bigint [not null]
+  reportable_type varchar [not null]
+  reportable_id bigint [not null]
+  reason varchar [not null]
+  description text [null]
+  status varchar [default: 'open', not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+
+  indexes {
+    (reportable_type, reportable_id)
+  }
+}
+
+// Relationships
+Ref: users.id < profiles.user_id [delete: cascade]
+Ref: users.id < marketplace_listings.user_id [delete: cascade]
+Ref: users.id < marketplace_favorites.user_id [delete: cascade]
+Ref: marketplace_listings.id < marketplace_favorites.marketplace_listing_id [delete: cascade]
+Ref: users.id < exchange_posts.user_id [delete: cascade]
+Ref: exchange_posts.id < exchange_requests.exchange_post_id [delete: cascade]
+Ref: users.id < exchange_requests.user_id [delete: cascade]
+Ref: users.id < marketplace_requests.user_id [delete: cascade]
+Ref: marketplace_listings.id < marketplace_requests.marketplace_listing_id [delete: cascade]
+Ref: users.id < announcements.created_by [delete: cascade]
+Ref: users.id < lost_and_found_items.user_id [delete: cascade]
+Ref: users.id < blood_requests.user_id [delete: cascade]
+Ref: blood_requests.id < blood_donation_responses.blood_request_id [delete: cascade]
+Ref: users.id < blood_donation_responses.user_id [delete: cascade]
+Ref: users.id < resources.user_id [delete: cascade]
+Ref: users.id < roommate_posts.user_id [delete: cascade]
+Ref: roommate_posts.id < roommate_requests.roommate_post_id [delete: cascade]
+Ref: users.id < roommate_requests.requester_id [delete: cascade]
+Ref: users.id < reports.user_id [delete: cascade]
+Ref: users.id < users.approved_by [delete: set null]

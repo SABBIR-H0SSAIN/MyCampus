@@ -14,8 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'approved' => \App\Http\Middleware\EnsureUserApproved::class,
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'approved'           => \App\Http\Middleware\EnsureUserApproved::class,
+            'role'               => \App\Http\Middleware\RoleMiddleware::class,
+            'ai.ratelimit'       => \App\Http\Middleware\AiRateLimit::class,
+            'prevent.production' => \App\Http\Middleware\PreventInProduction::class,
         ]);
 
         $middleware->statefulApi();

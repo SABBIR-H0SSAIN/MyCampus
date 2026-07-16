@@ -20,6 +20,25 @@ class RoommateSeeder extends Seeder
             return;
         }
 
+        // Find the dedicated test roommate author.
+        // We assign post 1 to this user deterministically so the main
+        // student account (Sabbir) can reliably test the AI roommate
+        // compatibility check against someone else's post.
+        $roommateAuthor = User::where('email', 'test.roommate@mycampus.test')->first();
+
+        // Find the main student so we can avoid assigning posts to them
+        // (so all posts remain visible for AI compatibility tests).
+        $mainStudent = User::where('email', 'sabbir01619@gmail.com')->first();
+
+        // Pool of users to randomize posts 2-4 across
+        $randomUserPool = $users->filter(function ($u) use ($mainStudent) {
+            return $mainStudent ? $u->id !== $mainStudent->id : true;
+        })->values();
+
+        if ($randomUserPool->isEmpty()) {
+            $randomUserPool = $users;
+        }
+
         $posts = [
             [
                 'title' => 'Need 1 roommate for 2BHK flat near KUET Gate',
@@ -31,6 +50,7 @@ class RoommateSeeder extends Seeder
                 'description' => 'A well-furnished room is available in a 2BHK flat. Walking distance from KUET main gate. Facilities include 24/7 water, Wi-Fi, and meal system.',
                 'contact' => '01700000001',
                 'status' => 'Open',
+                'images' => ['/storage/roommates/room_1.jpg'],
             ],
             [
                 'title' => 'Looking for a flatmate in Sonadanga',
@@ -42,6 +62,7 @@ class RoommateSeeder extends Seeder
                 'description' => 'We are two students looking for a third flatmate. The flat is spacious with an attached balcony and a modern kitchen.',
                 'contact' => '01700000002',
                 'status' => 'Open',
+                'images' => ['/storage/roommates/room_2.jpg'],
             ],
             [
                 'title' => 'Urgent: Roommate needed near Teligati',
@@ -53,6 +74,7 @@ class RoommateSeeder extends Seeder
                 'description' => 'A single room is available in our shared apartment. Low budget and student-friendly environment. Utility bills are shared equally.',
                 'contact' => '01700000003',
                 'status' => 'Open',
+                'images' => ['/storage/roommates/room_3.png'],
             ],
             [
                 'title' => 'Master bedroom available for 2 students',
@@ -68,8 +90,14 @@ class RoommateSeeder extends Seeder
         ];
 
         foreach ($posts as $index => $postData) {
-            $user = $users->random();
-            $postData['user_id'] = $user->id;
+            // Post #1 (index 0) is always assigned to the test roommate author
+            // so the AI compatibility check can be tested against a known other user.
+            // Remaining posts are randomized across other users (excluding yourself).
+            if ($index === 0 && $roommateAuthor) {
+                $postData['user_id'] = $roommateAuthor->id;
+            } else {
+                $postData['user_id'] = $randomUserPool->random()->id;
+            }
             RoommatePost::create($postData);
         }
     }

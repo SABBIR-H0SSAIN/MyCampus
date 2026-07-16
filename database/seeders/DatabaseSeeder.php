@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             ResourceSeeder::class,
             BloodRequestSeeder::class,
             RoommateSeeder::class,
+            AnnouncementSeeder::class,
+            LostAndFoundSeeder::class,
         ]);
     }
 }

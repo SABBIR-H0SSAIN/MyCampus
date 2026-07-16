@@ -15,73 +15,89 @@ class ExchangeSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get some users
-        $users = User::where('registration_status', 'Approved')->take(3)->get();
+        // Clear existing exchange posts and requests
+        ExchangeRequest::query()->delete();
+        ExchangePost::query()->delete();
 
-        if ($users->count() < 2) {
-            $this->command->warn('Not enough approved users to seed exchanges. Need at least 2.');
+        // Get student user
+        $user = User::where('role', 'student')->first() ?? User::where('role', 'admin')->first();
+
+        if (!$user) {
+            $this->command->warn('No user found to seed exchanges.');
             return;
         }
 
-        $user1 = $users[0];
-        $user2 = $users[1];
-        $user3 = $users->count() > 2 ? $users[2] : $user1;
+        $exchanges = [
+            [
+                'offering' => 'Rapoo E6080 Bluetooth Ultra-Slim Keyboard',
+                'desire' => 'TP-Link TL-WR841N Wireless Router',
+                'description' => 'Rapoo E6080 ultra-slim bluetooth keyboard. Want to exchange with a good router.',
+                'phone' => '+880 1711 000014',
+                'images' => [
+                    '/storage/marketplace/rapoo_keyboard.jpg',
+                    '/storage/marketplace/tplink_router.jpg'
+                ],
+            ],
+            [
+                'offering' => 'Click Stand Fan & Wardrobe',
+                'desire' => 'Click Ceiling Fan',
+                'description' => 'Looking to trade my stand fan and wardrobe setup for a ceiling fan.',
+                'phone' => '+880 1711 000014',
+                'images' => [
+                    '/storage/marketplace/click_fan.jpg',
+                    '/storage/marketplace/click_ceiling_fan.png'
+                ],
+            ],
+            [
+                'offering' => 'Wooden Study Table with Bookshelf',
+                'desire' => 'Semi-Double Bed & Mattress Set',
+                'description' => 'Study table in great condition. Need a semi-double bed frame and mattress.',
+                'phone' => '+880 1711 000014',
+                'images' => [
+                    '/storage/marketplace/bookshelf_study_table.jpg',
+                    '/storage/marketplace/semi_double_bed.jpg'
+                ],
+            ],
+            [
+                'offering' => 'Red 4-Tier Plastic Storage Rack',
+                'desire' => 'Metal Trunk Chest',
+                'description' => 'Need to store heavier things. Looking to swap my storage rack for a metal trunk chest.',
+                'phone' => '+880 1711 000014',
+                'images' => [
+                    '/storage/marketplace/red_rack.jpg',
+                    '/storage/marketplace/trunk.png'
+                ],
+            ],
+            [
+                'offering' => 'Plastic Chair',
+                'desire' => 'Wooden Study Table with Bookshelf',
+                'description' => 'Trade my plastic chair with a study table. Negotiable.',
+                'phone' => '+880 1711 000014',
+                'images' => [
+                    '/storage/marketplace/plastic_chair.png',
+                    '/storage/marketplace/bookshelf_study_table.jpg'
+                ],
+            ],
+            [
+                'offering' => 'Pak Wall Bracket Fan',
+                'desire' => 'RFL Gas Stove with LP Gas Cylinder',
+                'description' => 'Wall moving fan. Need a gas stove set with a cylinder for my hostel room.',
+                'phone' => '+880 1711 000014',
+                'images' => [
+                    '/storage/marketplace/pak_wall_fan.jpg',
+                    '/storage/marketplace/gas_stove.jpg'
+                ],
+            ]
+        ];
 
-        // Post 1
-        $post1 = ExchangePost::create([
-            'user_id' => $user1->id,
-            'offering' => 'Calculus by Stewart (8e)',
-            'desire' => 'Engineering Mathematics by Stroud',
-            'description' => 'I have the Stewart book in very good condition. Need the Stroud one for my next semester.',
-            'phone' => '+880 1711 000001',
-            'images' => ['https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=500&q=70'],
-            'status' => 'Open',
-            'created_at' => Carbon::now()->subDays(2),
-        ]);
+        foreach ($exchanges as $index => $exchange) {
+            ExchangePost::create(array_merge($exchange, [
+                'user_id' => $user->id,
+                'status' => 'Open',
+                'created_at' => Carbon::now()->subDays($index),
+            ]));
+        }
 
-        // Request on Post 1
-        ExchangeRequest::create([
-            'exchange_post_id' => $post1->id,
-            'user_id' => $user2->id,
-            'message' => 'Hi, I have the Stroud book in excellent condition. Let me know if we can meet at the library.',
-            'phone' => '+880 1718 000015',
-            'status' => 'pending',
-            'created_at' => Carbon::now()->subHours(2),
-        ]);
-
-        ExchangeRequest::create([
-            'exchange_post_id' => $post1->id,
-            'user_id' => $user3->id,
-            'message' => 'I have an older edition if you are okay with that.',
-            'phone' => '+880 1717 000022',
-            'status' => 'declined',
-            'created_at' => Carbon::now()->subDay(),
-        ]);
-
-        // Post 2
-        ExchangePost::create([
-            'user_id' => $user2->id,
-            'offering' => 'Casio FX-991EX',
-            'desire' => 'Casio FX-100MS + cash',
-            'description' => 'Upgrading to a programmable one, so I need to downgrade and get some cash.',
-            'phone' => '+880 1722 000002',
-            'images' => ['https://images.unsplash.com/photo-1574607383476-f517f260d30b?w=500&q=70'],
-            'status' => 'Open',
-            'created_at' => Carbon::now()->subDays(1),
-        ]);
-
-        // Post 3
-        ExchangePost::create([
-            'user_id' => $user3->id,
-            'offering' => 'Mechanical drawing T-square',
-            'desire' => 'Set of French curves',
-            'description' => 'Barely used T-square. Need French curves for my architecture assignment.',
-            'phone' => '+880 1733 000003',
-            'images' => ['https://images.unsplash.com/photo-1503602642458-232111445657?w=500&q=70'],
-            'status' => 'Completed',
-            'created_at' => Carbon::now()->subDays(5),
-        ]);
-
-        $this->command->info('Exchange posts and requests seeded successfully.');
+        $this->command->info('Exchange database seeded successfully with 6 posts.');
     }
 }

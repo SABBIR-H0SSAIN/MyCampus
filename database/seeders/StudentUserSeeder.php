@@ -36,5 +36,32 @@ class StudentUserSeeder extends Seeder
 
         // Create profile for student
         $student->profile()->firstOrCreate();
+
+        // Second approved student so the main user (Sabbir) can test
+        // the AI Roommate compatibility feature against someone else's post.
+        $roommateAuthor = User::firstOrCreate(
+            ['email' => 'test.roommate@mycampus.test'],
+            [
+                'name' => 'Test Roommate Author',
+                'password' => 'password',
+                'roll_number' => '2207200',
+                'department' => 'EEE',
+                'batch' => 2022,
+                'gender' => 'male',
+                'blood_group' => 'B+',
+                'phone' => '01700000200',
+                'role' => 'student',
+                'registration_status' => RegistrationStatus::Approved,
+                'student_id_card_path' => 'id-cards/test-roommate-placeholder.jpg',
+                'approved_at' => now(),
+                'approved_by' => $admin ? $admin->id : null,
+            ]
+        );
+
+        // Create profile (with bio so AI matching has richer data)
+        $roommateAuthor->profile()->firstOrCreate([]);
+        $roommateAuthor->profile()->update([
+            'bio' => 'Quiet CSE/EEE student. Studies mostly at night and keeps a clean room. Looking for a calm roommate.',
+        ]);
     }
 }
