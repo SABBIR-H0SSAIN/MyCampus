@@ -8,9 +8,7 @@ use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
-    /**
-     * Get the authenticated user's profile
-     */
+    // Get current user profile
     public function show(Request $request)
     {
         $user = $request->user()->load([
@@ -26,10 +24,7 @@ class ProfileController extends Controller
             'user' => $user,
         ]);
     }
-
-    /**
-     * Get a specific user's profile
-     */
+    // Get specific user profile
     public function getUserProfile($id)
     {
         $user = \App\Models\User::with([
@@ -48,10 +43,7 @@ class ProfileController extends Controller
             'user' => $user,
         ]);
     }
-
-    /**
-     * Update the authenticated user's profile
-     */
+    // Update current user profile
     public function update(Request $request)
     {
         $user = $request->user();
@@ -98,10 +90,7 @@ class ProfileController extends Controller
             'user' => $user->load('profile'),
         ]);
     }
-
-    /**
-     * Upload Avatar
-     */
+    // Upload profile avatar
     public function uploadAvatar(Request $request)
     {
         $request->validate([
@@ -121,6 +110,29 @@ class ProfileController extends Controller
         return response()->json([
             'message' => 'Avatar updated successfully',
             'avatar_url' => asset("storage/$path"),
+        ]);
+    }
+
+    // Upload profile cover photo
+    public function uploadCover(Request $request)
+    {
+        $request->validate([
+            'cover' => ['required', 'image', 'max:5120'], // max 5MB
+        ]);
+
+        $user = $request->user();
+        $profile = $user->profile()->firstOrCreate(['user_id' => $user->id]);
+
+        if ($profile->cover_path) {
+            Storage::disk('public')->delete($profile->cover_path);
+        }
+
+        $path = $request->file('cover')->store('covers', 'public');
+        $profile->update(['cover_path' => $path]);
+
+        return response()->json([
+            'message' => 'Cover photo updated successfully',
+            'cover_url' => asset("storage/$path"),
         ]);
     }
 }

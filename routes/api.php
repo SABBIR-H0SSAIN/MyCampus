@@ -2,11 +2,15 @@
 
 use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\AnalyticsSummaryController;
 use App\Http\Controllers\AnnouncementController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\UserController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\MarketplaceListingController;
 use App\Http\Controllers\RoommateController;
 use App\Http\Middleware\EnsureUserApproved;
@@ -27,8 +31,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [RegisterController::class, 'register']);
     Route::post('/login', [LoginController::class, 'login']);
-    Route::post('/forgot-password', [ForgotPasswordController::class, 'forgotPassword']);
-    Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 });
 
 // ──────────────────────────────────────────────
@@ -48,9 +50,13 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     Route::get('/users/{id}/profile', [\App\Http\Controllers\ProfileController::class, 'getUserProfile']);
     Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update']);
     Route::post('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'uploadAvatar']);
+    Route::post('/profile/cover', [\App\Http\Controllers\ProfileController::class, 'uploadCover']);
 
     // Dashboard
     Route::get('/dashboard/stats', [\App\Http\Controllers\DashboardController::class, 'stats']);
+
+    // Global cross-module search (powers the topbar search bar)
+    Route::get('/search', [\App\Http\Controllers\SearchController::class, 'search']);
 
     // Marketplace
     Route::get('/marketplace/requests/my', [MarketplaceListingController::class, 'myRequests']);
@@ -79,6 +85,9 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     Route::get('roommates/{id}/requests', [RoommateController::class, 'getPostRequests']);
     Route::get('my-roommate-requests', [RoommateController::class, 'getMyRequests']);
     Route::post('roommate-requests/{id}/respond', [RoommateController::class, 'respondToRequest']);
+    // AI: Roommate compatibility check (rate-limited)
+    Route::get('roommates/{id}/compatibility', [\App\Http\Controllers\RoommateCompatibilityController::class, 'check'])
+        ->middleware('ai.ratelimit');
 
     // - Lost & Found
     Route::apiResource('lost-found', \App\Http\Controllers\LostAndFoundController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -87,7 +96,9 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
     Route::put('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
     Route::put('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead']);
+    
     // - Reports
+    Route::post('/reports', [ReportController::class, 'store']);
 
     // Announcements (read-only for students)
     Route::get('/announcements', [AnnouncementController::class, 'index']);
@@ -99,11 +110,22 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
 Route::middleware(['auth:sanctum', EnsureUserApproved::class, 'role:admin'])
     ->prefix('admin')
     ->group(function () {
+        // Stats Overview
+        Route::get('/stats', [AdminDashboardController::class, 'index']);
+        // AI-generated executive summary of platform stats (rate-limited)
+        Route::post('/analytics-summary', [AnalyticsSummaryController::class, 'summarize'])
+            ->middleware('ai.ratelimit');
+
         // Registration management
         Route::get('/registrations', [RegistrationController::class, 'index']);
         Route::get('/registrations/{user}', [RegistrationController::class, 'show']);
         Route::post('/registrations/{user}/approve', [RegistrationController::class, 'approve']);
         Route::post('/registrations/{user}/reject', [RegistrationController::class, 'reject']);
+
+        // User management
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::put('/users/{user}/role', [AdminUserController::class, 'updateRole']);
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy']);
 
         // Announcement management
         Route::get('/announcements', [AdminAnnouncementController::class, 'index']);
@@ -111,6 +133,11 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class, 'role:admin'])
         Route::put('/announcements/{id}', [AdminAnnouncementController::class, 'update']);
         Route::delete('/announcements/{id}', [AdminAnnouncementController::class, 'destroy']);
         Route::post('/announcements/{id}/toggle-pin', [AdminAnnouncementController::class, 'togglePin']);
+
+        // Reports management
+        Route::get('/reports', [AdminReportController::class, 'index']);
+        Route::put('/reports/{id}/status', [AdminReportController::class, 'updateStatus']);
+        Route::delete('/reports/{id}', [AdminReportController::class, 'destroy']);
     });
 
 // ──────────────────────────────────────────────
@@ -119,3 +146,16 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class, 'role:admin'])
 Route::get('/admin/registrations/{user}/id-card', [RegistrationController::class, 'idCard'])
     ->name('admin.registrations.id-card')
     ->middleware('signed');
+
+// ──────────────────────────────────────────────
+// Debug routes (admin only) — local development helpers
+// Automatically 404 in production via prevent.production middleware.
+// ──────────────────────────────────────────────
+Route::middleware(['prevent.production', 'auth:sanctum', EnsureUserApproved::class, 'role:admin'])
+    ->prefix('_debug')
+    ->group(function () {
+        // Quick Gemini connectivity test. Returns model, endpoint, prompt,
+        // and the raw Gemini response (or detailed error).
+        // Usage: GET /api/_debug/gemini-test[?prompt=...]
+        Route::get('/gemini-test', [\App\Http\Controllers\_Debug\GeminiDebugController::class, 'test']);
+    });

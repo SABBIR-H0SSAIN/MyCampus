@@ -9,9 +9,7 @@ use Illuminate\Http\JsonResponse;
 
 class MarketplaceListingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // List all marketplace listings
     public function index(Request $request): JsonResponse
     {
         $listings = MarketplaceListing::with(['user.profile', 'marketplaceRequests.user.profile'])->latest()->get();
@@ -65,9 +63,7 @@ class MarketplaceListingController extends Controller
         return response()->json($formatted);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Create a new listing
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -108,9 +104,7 @@ class MarketplaceListingController extends Controller
         return response()->json(['message' => 'Listing created successfully', 'id' => $listing->id], 201);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // Update a listing
     public function update(Request $request, string $id): JsonResponse
     {
         $listing = MarketplaceListing::findOrFail($id);
@@ -135,9 +129,7 @@ class MarketplaceListingController extends Controller
         return response()->json(['message' => 'Listing updated successfully']);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Delete a listing
     public function destroy(Request $request, string $id): JsonResponse
     {
         $listing = MarketplaceListing::findOrFail($id);
@@ -151,9 +143,7 @@ class MarketplaceListingController extends Controller
         return response()->json(['message' => 'Listing deleted successfully']);
     }
 
-    /**
-     * Display the specified resource and increment views.
-     */
+    // View a listing and increment views
     public function show(string $id): JsonResponse
     {
         $listing = MarketplaceListing::findOrFail($id);
@@ -165,9 +155,7 @@ class MarketplaceListingController extends Controller
         ]);
     }
 
-    /**
-     * Toggle favorite status for the listing.
-     */
+    // Toggle favorite status
     public function toggleFavorite(Request $request, string $id): JsonResponse
     {
         $listing = MarketplaceListing::findOrFail($id);
@@ -176,9 +164,7 @@ class MarketplaceListingController extends Controller
         return response()->json(['message' => 'Favorite toggled']);
     }
 
-    /**
-     * Display a listing of requests made by the authenticated user.
-     */
+    // List user's requests
     public function myRequests(Request $request): JsonResponse
     {
         $requests = $request->user()->marketplaceRequests()->latest()->get()->map(function ($req) {
@@ -193,9 +179,7 @@ class MarketplaceListingController extends Controller
         return response()->json($requests);
     }
 
-    /**
-     * Store a newly created request in storage.
-     */
+    // Submit a request for a listing
     public function storeRequest(Request $request, string $id): JsonResponse
     {
         $listing = MarketplaceListing::findOrFail($id);
@@ -223,9 +207,7 @@ class MarketplaceListingController extends Controller
         return response()->json(['message' => 'Request sent successfully', 'id' => $marketplaceRequest->id], 201);
     }
 
-    /**
-     * Accept a request.
-     */
+    // Accept a request
     public function acceptRequest(Request $request, string $id): JsonResponse
     {
         $marketplaceRequest = MarketplaceRequest::findOrFail($id);

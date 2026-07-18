@@ -8,10 +8,7 @@ use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
 {
-    /**
-     * Return all published announcements — pinned first, then latest.
-     * Students can only read; no create/edit/delete.
-     */
+    // Return published announcements, pinned first
     public function index(Request $request): JsonResponse
     {
         $category = $request->query('category');

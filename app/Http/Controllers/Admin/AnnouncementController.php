@@ -9,9 +9,7 @@ use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
 {
-    /**
-     * List all announcements (admin view — includes unpublished / scheduled).
-     */
+    // List all announcements (includes unpublished/scheduled)
     public function index(Request $request): JsonResponse
     {
         $category = $request->query('category');
@@ -41,9 +39,7 @@ class AnnouncementController extends Controller
         return response()->json($announcements);
     }
 
-    /**
-     * Create a new announcement.
-     */
+    // Create a new announcement
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -69,9 +65,7 @@ class AnnouncementController extends Controller
         ], 201);
     }
 
-    /**
-     * Update an existing announcement.
-     */
+    // Update an announcement
     public function update(Request $request, string $id): JsonResponse
     {
         $announcement = Announcement::findOrFail($id);
@@ -89,9 +83,7 @@ class AnnouncementController extends Controller
         return response()->json(['message' => 'Announcement updated successfully.']);
     }
 
-    /**
-     * Delete an announcement.
-     */
+    // Delete an announcement
     public function destroy(string $id): JsonResponse
     {
         $announcement = Announcement::findOrFail($id);
@@ -100,9 +92,7 @@ class AnnouncementController extends Controller
         return response()->json(['message' => 'Announcement deleted successfully.']);
     }
 
-    /**
-     * Toggle the pinned status of an announcement.
-     */
+    // Toggle pin status
     public function togglePin(string $id): JsonResponse
     {
         $announcement = Announcement::findOrFail($id);

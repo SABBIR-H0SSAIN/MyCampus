@@ -9,9 +9,7 @@ use Illuminate\Http\JsonResponse;
 
 class ExchangeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // List all resources
     public function index(Request $request): JsonResponse
     {
         $posts = ExchangePost::with(['user.profile', 'exchangeRequests.user.profile'])->latest()->get();
@@ -53,10 +51,7 @@ class ExchangeController extends Controller
 
         return response()->json($formatted);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Create a new resource
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -90,10 +85,7 @@ class ExchangeController extends Controller
 
         return response()->json(['message' => 'Exchange post created successfully', 'id' => $post->id], 201);
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
+    // Update a resource
     public function update(Request $request, string $id): JsonResponse
     {
         $post = ExchangePost::findOrFail($id);
@@ -113,10 +105,7 @@ class ExchangeController extends Controller
 
         return response()->json(['message' => 'Exchange post updated successfully']);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Delete a resource
     public function destroy(Request $request, string $id): JsonResponse
     {
         $post = ExchangePost::findOrFail($id);
@@ -129,10 +118,7 @@ class ExchangeController extends Controller
 
         return response()->json(['message' => 'Exchange post deleted successfully']);
     }
-
-    /**
-     * Display a listing of requests made by the authenticated user.
-     */
+    // List user requests
     public function myRequests(Request $request): JsonResponse
     {
         $requests = $request->user()->exchangeRequests()->latest()->get()->map(function ($req) {
@@ -146,10 +132,7 @@ class ExchangeController extends Controller
 
         return response()->json($requests);
     }
-
-    /**
-     * Store a newly created request in storage.
-     */
+    // Submit a request
     public function storeRequest(Request $request, string $id): JsonResponse
     {
         $post = ExchangePost::findOrFail($id);
@@ -176,10 +159,7 @@ class ExchangeController extends Controller
 
         return response()->json(['message' => 'Request sent successfully', 'id' => $exchangeRequest->id], 201);
     }
-
-    /**
-     * Accept a request.
-     */
+    // Accept a request
     public function acceptRequest(Request $request, string $id): JsonResponse
     {
         $exchangeRequest = ExchangeRequest::findOrFail($id);
