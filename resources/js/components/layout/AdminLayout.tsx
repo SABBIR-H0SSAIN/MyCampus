@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Shield, UserCheck, Users, Flag, Megaphone, LayoutDashboard, Bell, LogOut } from "lucide-react";
+import { Shield, UserCheck, Users, Flag, Megaphone, LayoutDashboard, Bell, LogOut, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -64,9 +64,15 @@ export function AdminLayout() {
           {nav.map((n) => <NavItem key={n.to} {...n} />)}
         </nav>
         <div className="space-y-1 border-t border-sidebar-border p-3">
+          <Link
+            to="/app"
+            className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4 text-sidebar-foreground/70 group-hover:text-sidebar-foreground" /> Back to the app
+          </Link>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm text-blood hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+            className="w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm text-blood hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors cursor-pointer"
           >
             <LogOut className="h-4 w-4 text-blood" /> Logout
           </button>
@@ -74,11 +80,18 @@ export function AdminLayout() {
       </aside>
 
       <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-sidebar-border bg-sidebar/90 px-4 backdrop-blur lg:pl-72 lg:pr-8">
-        <div className="flex items-center gap-2 lg:hidden">
-          <Logo mark size="md" />
-          <span className="rounded bg-sidebar-accent px-1.5 py-0.5 font-mono text-[10px] font-bold text-sidebar-primary shrink-0">ADMIN</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 lg:hidden">
+            <Logo mark size="md" />
+            <span className="rounded bg-sidebar-accent px-1.5 py-0.5 font-mono text-[10px] font-bold text-sidebar-primary shrink-0">ADMIN</span>
+          </div>
+          <Link
+            to="/app"
+            className="flex items-center gap-1.5 rounded-md border border-sidebar-border bg-sidebar-accent/50 px-2.5 py-1.5 text-xs font-medium text-sidebar-foreground transition hover:bg-sidebar-accent cursor-pointer"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to the app
+          </Link>
         </div>
-        <div className="flex items-center gap-2 lg:flex" />
         <div className="flex items-center gap-2">
           <button className="relative grid h-9 w-9 place-items-center rounded-md border border-sidebar-border bg-sidebar-accent/50 text-sidebar-foreground transition hover:bg-sidebar-accent cursor-pointer" aria-label="Notifications">
             <Bell className="h-4 w-4" />

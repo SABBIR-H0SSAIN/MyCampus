@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Badge, Btn, Card, PageHeader, Field, Input, Textarea } from "@/components/ui-bits";
-import { ArrowLeftRight, Plus, Edit3, Trash2, Phone, X, MessageSquare, CheckCircle, Clock } from "lucide-react";
+import { ArrowLeftRight, Plus, Edit3, Trash2, Phone, X, MessageSquare, CheckCircle, Clock, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { useOpenFromSearchParam } from "@/hooks/useOpenFromSearchParam";
+import { ReportModal } from "@/components/ReportModal";
 
 // --- Types ---
 type ResponseItem = {
@@ -165,6 +167,7 @@ function ExchangeDetailsModal({
   onEdit: () => void,
   onDelete: () => void,
   onViewResponses: () => void,
+  onReport: () => void,
   isDeleting: boolean
 }) {
   return (
@@ -239,7 +242,7 @@ function ExchangeDetailsModal({
               </div>
 
               {/* Author Actions */}
-              {post.selfPosted && (
+              {post.selfPosted ? (
                 <div className="pt-6 border-t border-border mt-auto space-y-3">
                   <h4 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Manage Post</h4>
                   <div className="flex flex-col gap-2">
@@ -258,6 +261,15 @@ function ExchangeDetailsModal({
                       </Btn>
                     </div>
                   </div>
+                </div>
+              ) : (
+                <div className="pt-6 border-t border-border mt-auto flex justify-end">
+                  <button 
+                    onClick={() => { onClose(); onReport(); }}
+                    className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition cursor-pointer"
+                  >
+                    <Flag className="h-4 w-4" /> Report Post
+                  </button>
                 </div>
               )}
             </div>
@@ -278,6 +290,7 @@ export default function Exchange() {
   const [viewingResponses, setViewingResponses] = useState<ExchangeListing | null>(null);
   const [requestingPost, setRequestingPost] = useState<ExchangeListing | null>(null);
   const [viewingDetails, setViewingDetails] = useState<ExchangeListing | null>(null);
+  const [reportingPost, setReportingPost] = useState<ExchangeListing | null>(null);
 
   const { data: exchanges = [], isLoading: isLoadingExchanges } = useQuery<ExchangeListing[]>({
     queryKey: ["exchange-posts"],
@@ -345,6 +358,9 @@ export default function Exchange() {
     if (!requestingPost) return;
     requestMutation.mutate({ id: requestingPost.id, data: { message: msg, phone } });
   };
+
+  // Global search bar (?open=<id>) → auto-open detail modal for that post
+  useOpenFromSearchParam(exchanges, setViewingDetails);
 
   if (isLoadingExchanges || isLoadingRequests) {
     return <div className="py-20 text-center text-muted-foreground animate-pulse">Loading exchanges...</div>;
@@ -531,9 +547,19 @@ export default function Exchange() {
           onEdit={() => setEditingPost(viewingDetails)}
           onDelete={() => handleDelete(viewingDetails.id)}
           onViewResponses={() => setViewingResponses(viewingDetails)}
+          onReport={() => setReportingPost(viewingDetails)}
           isDeleting={deleteMutation.isPending}
         />
       )}
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={!!reportingPost}
+        onClose={() => setReportingPost(null)}
+        reportableType="App\Models\ExchangePost"
+        reportableId={reportingPost?.id || ""}
+        itemTitle={reportingPost?.offering}
+      />
     </div>
   );
 }

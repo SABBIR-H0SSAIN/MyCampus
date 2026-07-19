@@ -9,12 +9,7 @@ use Illuminate\Http\JsonResponse;
 
 class RegisterController extends Controller
 {
-    /**
-     * Handle a registration request.
-     *
-     * Creates a new user with pending status and stores the student ID card.
-     * The user must wait for admin approval before they can log in.
-     */
+    // Handle a registration request. Creates a new user with pending status and stores the student ID card. The user must wait for admin approval before they can log in.
     public function register(RegisterRequest $request): JsonResponse
     {
         // Store the student ID card

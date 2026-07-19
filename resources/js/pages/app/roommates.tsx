@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Wallet, MapPin, Calendar, Search, Filter, X, Send } from "lucide-react";
+import { Plus, Wallet, MapPin, Calendar, Search, X, Send, Sparkles, Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +9,7 @@ import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { useOpenFromSearchParam } from "@/hooks/useOpenFromSearchParam";
 
 // --- Types ---
 interface Profile {
@@ -40,6 +41,7 @@ interface RoommatePost {
   status: string;
   created_at: string;
   user?: User;
+  images?: string[];
 }
 
 interface RoommateRequest {
@@ -118,6 +120,28 @@ export default function RoommateFinder() {
   const [requestModalPost, setRequestModalPost] = useState<RoommatePost | null>(null);
   const [responsesModalPost, setResponsesModalPost] = useState<RoommatePost | null>(null);
   const [viewingDetails, setViewingDetails] = useState<RoommatePost | null>(null);
+
+  // Per-card AI compatibility state: { postId: { loading, score, label, reason, error } }
+  const [compatibilityMap, setCompatibilityMap] = useState<Record<number, {
+    loading: boolean;
+    score?: number;
+    label?: string;
+    reason?: string;
+    error?: string;
+  }>>({});
+
+  const checkCompatibility = async (postId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCompatibilityMap(prev => ({ ...prev, [postId]: { loading: true } }));
+    try {
+      const res = await api.get(`/api/roommates/${postId}/compatibility`);
+      setCompatibilityMap(prev => ({ ...prev, [postId]: { loading: false, ...res.data } }));
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'AI check failed. Try again.';
+      setCompatibilityMap(prev => ({ ...prev, [postId]: { loading: false, error: msg } }));
+      toast.error(msg);
+    }
+  };
 
   // Queries
   const { data: posts, isLoading: postsLoading } = useQuery<RoommatePost[]>({
@@ -213,6 +237,13 @@ export default function RoommateFinder() {
     return false;
   });
 
+  // Global search bar (?open=<id>) → auto-open detail modal for that post.
+  // Falls back to "all" tab if needed so the post is visible when modal opens.
+  useOpenFromSearchParam(
+    Array.isArray(posts) ? posts : undefined,
+    (post) => { setActiveTab("explore"); setViewingDetails(post); }
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -305,6 +336,12 @@ export default function RoommateFinder() {
                   <Badge variant={post.status === "Open" ? "success" : "outline"}>{post.status}</Badge>
                 </div>
 
+                {post.images && post.images.length > 0 && (
+                  <div className="aspect-video w-full rounded-lg overflow-hidden bg-secondary mb-4">
+                    <img src={post.images[0]} className="h-full w-full object-cover" alt="" />
+                  </div>
+                )}
+
                 <div className="space-y-2.5 text-sm mb-4 flex-grow">
                   <p className="flex items-center gap-2 text-muted-foreground">
                     <Wallet className="h-4 w-4 text-primary" /> 
@@ -354,18 +391,62 @@ export default function RoommateFinder() {
                     </div>
                   </div>
                 ) : (
-                  <div className="mt-auto pt-4 border-t border-border" onClick={e => e.stopPropagation()}>
-                    {post.user_id !== user?.id && post.status === "Open" ? (
-                      <Btn 
-                        className="w-full cursor-pointer" 
-                        onClick={() => setRequestModalPost(post)}
-                      >
-                        <Send className="h-4 w-4 mr-2" /> Request to be Roommate
-                      </Btn>
-                    ) : (
-                      <Btn 
+                  <div className="mt-auto pt-3 space-y-2" onClick={e => e.stopPropagation()}>
+                    {post.user_id !== user?.id && post.status === "Open" && (() => {
+                      const compat = compatibilityMap[post.id];
+                      const scoreColor = !compat?.score ? '' :
+                        compat.score >= 70 ? 'text-green-400' :
+                        compat.score >= 40 ? 'text-yellow-400' : 'text-red-400';
+                      const scoreBg = !compat?.score ? '' :
+                        compat.score >= 70 ? 'bg-green-400/10 border-green-400/30' :
+                        compat.score >= 40 ? 'bg-yellow-400/10 border-yellow-400/30' : 'bg-red-400/10 border-red-400/30';
+
+                      return (
+                        <>
+                          {compat?.score !== undefined && (
+                            <div className={`flex flex-col gap-1.5 rounded-lg border px-3 py-2 ${scoreBg}`}>
+                              <div className="flex items-center justify-between">
+                                <p className={`text-xs font-bold ${scoreColor}`}>{compat.label}</p>
+                                <span className={`text-2xl font-black shrink-0 ${scoreColor}`}>
+                                  {compat.score}
+                                  <span className="text-xs font-medium opacity-70 ml-0.5">%</span>
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words leading-relaxed">
+                                {compat.reason}
+                              </p>
+                            </div>
+                          )}
+                          {compat?.error && (
+                            <p className="text-[10px] text-blood">{compat.error}</p>
+                          )}
+                          <div className="grid grid-cols-2 gap-2">
+                            <Btn
+                              variant="outline"
+                              size="sm"
+                              disabled={compat?.loading}
+                              className="cursor-pointer text-violet-400 border-violet-400/40 hover:bg-violet-400/10 gap-1 text-xs"
+                              onClick={(e) => checkCompatibility(post.id, e)}
+                            >
+                              {compat?.loading
+                                ? <><Loader2 className="h-3 w-3 animate-spin" /> Checking...</>
+                                : <><Sparkles className="h-3 w-3" /> AI Match</>}
+                            </Btn>
+                            <Btn
+                              className="cursor-pointer text-xs"
+                              size="sm"
+                              onClick={() => setRequestModalPost(post)}
+                            >
+                              <Send className="h-3 w-3 mr-1" /> Request
+                            </Btn>
+                          </div>
+                        </>
+                      );
+                    })()}
+                    {(post.user_id === user?.id || post.status !== "Open") && (
+                      <Btn
                         variant="secondary"
-                        className="w-full cursor-pointer" 
+                        className="w-full cursor-pointer"
                         onClick={() => setViewingDetails(post)}
                       >
                         View Details
@@ -476,16 +557,30 @@ export default function RoommateFinder() {
 
       {/* DETAILS MODAL */}
       {viewingDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="w-full max-w-2xl rounded-xl border border-border bg-surface shadow-lg my-8 flex flex-col">
-            <div className="flex items-center justify-between p-5 border-b border-border">
-              <h2 className="text-xl font-bold">Roommate Ad Details</h2>
-              <button onClick={() => setViewingDetails(null)} className="rounded-full p-2 hover:bg-secondary text-muted-foreground transition-colors cursor-pointer">
-                <X className="h-5 w-5" />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 overflow-y-auto"
+          onClick={() => setViewingDetails(null)}
+        >
+          {/* flex flex-col + max-h keeps the card capped to the viewport so
+              the header (with close button) and footer stay fixed while
+              only the body scrolls when content is long. */}
+          <div
+            className="w-full max-w-2xl max-h-[calc(100vh-2rem)] rounded-xl border border-border bg-surface shadow-lg my-4 flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 p-5 border-b border-border shrink-0">
+              <h2 className="text-xl font-bold truncate">Roommate Ad Details</h2>
+              <button
+                onClick={() => setViewingDetails(null)}
+                aria-label="Close details"
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-secondary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-secondary/70 transition-colors cursor-pointer shrink-0"
+              >
+                <X className="h-4 w-4" />
+                <span>Close</span>
               </button>
             </div>
-            
-            <div className="p-6 space-y-6">
+
+            <div className="p-6 space-y-6 flex-1 min-h-0 overflow-y-auto">
               <div className="flex items-start justify-between">
                 <div>
                   <h1 className="text-2xl font-bold text-foreground mb-2">{viewingDetails.title}</h1>
@@ -539,13 +634,84 @@ export default function RoommateFinder() {
                 </div>
               )}
 
+              {viewingDetails.images && viewingDetails.images.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold mb-2">Room Images</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {viewingDetails.images.map((img, i) => (
+                      <a key={i} href={img} target="_blank" rel="noreferrer" className="aspect-video rounded-lg overflow-hidden border border-border bg-secondary hover:opacity-90 transition cursor-pointer">
+                        <img src={img} className="h-full w-full object-cover" alt="" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <h3 className="text-sm font-semibold mb-2">Description</h3>
                 <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{viewingDetails.description}</p>
               </div>
+
+              {/* AI Compatibility Panel — at the bottom of the modal body */}
+              {viewingDetails.user_id !== user?.id && viewingDetails.status === "Open" && (() => {
+                const compat = compatibilityMap[viewingDetails.id];
+                const scoreColor = !compat?.score ? '' :
+                  compat.score >= 70 ? 'text-green-500' :
+                  compat.score >= 40 ? 'text-yellow-500' : 'text-red-500';
+                const scoreBg = !compat?.score ? 'bg-secondary/30 border-border' :
+                  compat.score >= 70 ? 'bg-green-500/10 border-green-500/30' :
+                  compat.score >= 40 ? 'bg-yellow-500/10 border-yellow-500/30' :
+                                        'bg-red-500/10 border-red-500/30';
+                const labelText = compat?.label ?? null;
+
+                return (
+                  <div className={`rounded-lg border px-4 py-3 ${scoreBg}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className={`h-4 w-4 ${scoreColor}`} />
+                        <h3 className={`text-sm font-semibold ${scoreColor}`}>
+                          {labelText ? `AI Compatibility: ${labelText}` : 'AI Compatibility'}
+                        </h3>
+                      </div>
+                      {compat?.score !== undefined && (
+                        <span className={`text-xl font-black ${scoreColor}`}>
+                          {compat.score}<span className="text-xs font-medium opacity-70 ml-0.5">%</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {compat?.loading && (
+                      <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Analyzing lifestyle, budget, and preferences…
+                      </p>
+                    )}
+
+                    {compat?.reason && !compat.loading && (
+                      <p className="mt-2 text-xs text-foreground whitespace-pre-wrap break-words leading-relaxed">
+                        {compat.reason}
+                      </p>
+                    )}
+
+                    {compat?.error && (
+                      <p className="mt-2 text-xs text-red-500">{compat.error}</p>
+                    )}
+
+                    {!compat?.loading && !compat?.reason && !compat?.error && (
+                      <button
+                        onClick={() => checkCompatibility(viewingDetails.id, { stopPropagation: () => {} } as React.MouseEvent)}
+                        className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 transition-colors cursor-pointer"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Check AI Compatibility
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
-            <div className="p-5 border-t border-border bg-secondary/10 flex flex-wrap gap-3 justify-end rounded-b-xl">
+            <div className="p-5 border-t border-border bg-secondary/10 flex flex-wrap gap-3 justify-end rounded-b-xl shrink-0">
               {viewingDetails.user_id === user?.id ? (
                 <>
                   <Btn variant="outline" onClick={() => { setViewingDetails(null); setResponsesModalPost(viewingDetails); }} className="cursor-pointer flex-1 sm:flex-none">
@@ -598,9 +764,32 @@ function CreateRoommateModal({ onClose, onSuccess }: { onClose: () => void, onSu
     defaultValues: { budget: 0 }
   });
 
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+
+  const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + imageFiles.length > 3) {
+      toast.error("You can upload up to 3 images");
+      return;
+    }
+    const newFiles = [...imageFiles, ...files];
+    setImageFiles(newFiles);
+    setPreviews(newFiles.map(file => URL.createObjectURL(file)));
+  };
+
+  const removeImage = (index: number) => {
+    const newFiles = [...imageFiles];
+    newFiles.splice(index, 1);
+    setImageFiles(newFiles);
+    setPreviews(newFiles.map(file => URL.createObjectURL(file)));
+  };
+
   const mutation = useMutation({
-    mutationFn: async (data: any) => {
-      return api.post("/api/roommates", data);
+    mutationFn: async (formData: FormData) => {
+      return api.post("/api/roommates", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
     },
     onSuccess: () => {
       toast.success("Post created successfully!");
@@ -612,10 +801,24 @@ function CreateRoommateModal({ onClose, onSuccess }: { onClose: () => void, onSu
   });
 
   const onSubmit = (data: CreatePostForm) => {
-    mutation.mutate({
-      ...data,
-      lifestyle: selectedLifestyles
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("location", data.location);
+    formData.append("budget", data.budget.toString());
+    formData.append("move_in_date", data.move_in_date);
+    formData.append("description", data.description);
+    formData.append("contact", data.contact);
+    if (data.looking_for) {
+      formData.append("looking_for", data.looking_for);
+    }
+    selectedLifestyles.forEach((tag, idx) => {
+      formData.append(`lifestyle[${idx}]`, tag);
     });
+    imageFiles.forEach(file => {
+      formData.append("images[]", file);
+    });
+
+    mutation.mutate(formData);
   };
 
   const toggleLifestyle = (tag: string) => {
@@ -632,18 +835,18 @@ function CreateRoommateModal({ onClose, onSuccess }: { onClose: () => void, onSu
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="w-full max-w-2xl rounded-xl border border-border bg-surface p-6 shadow-lg my-8">
-        <div className="flex items-center justify-between mb-5">
-          <div>
+      <div className="w-full max-w-2xl max-h-[calc(100vh-2rem)] rounded-xl border border-border bg-surface shadow-lg my-4 flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between gap-3 p-5 border-b border-border shrink-0">
+          <div className="min-w-0">
             <h2 className="text-xl font-bold">Find a Roommate</h2>
             <p className="text-sm text-muted-foreground">Post an ad to find roommates for your flat.</p>
           </div>
-          <button onClick={onClose} className="rounded-full p-2 hover:bg-secondary text-muted-foreground transition-colors cursor-pointer">
+          <button onClick={onClose} className="rounded-full p-2 hover:bg-secondary text-muted-foreground transition-colors cursor-pointer shrink-0">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 min-h-0 overflow-y-auto p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1.5 md:col-span-2">
               <label className="text-sm font-medium">Title *</label>
@@ -704,9 +907,42 @@ function CreateRoommateModal({ onClose, onSuccess }: { onClose: () => void, onSu
               <textarea {...register("description")} rows={4} placeholder="Describe the flat, facilities, internet, meal system, etc." className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
               {errors.description && <p className="text-xs text-blood">{errors.description.message}</p>}
             </div>
+
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-medium">Room Images (Up to 3)</label>
+              <div className="grid grid-cols-4 gap-3 mt-2">
+                {previews.map((preview, index) => (
+                  <div key={index} className="aspect-square relative rounded-lg border border-border bg-secondary overflow-hidden">
+                    <img src={preview} className="h-full w-full object-cover" alt="" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-white hover:bg-black transition cursor-pointer"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {previews.length < 3 && (
+                  <label className="aspect-square cursor-pointer rounded-lg border border-dashed border-border bg-background hover:border-primary transition grid place-items-center text-muted-foreground hover:text-primary">
+                    <div className="flex flex-col items-center gap-1">
+                      <Plus className="h-5 w-5" />
+                      <span className="text-[10px]">Add photo</span>
+                    </div>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleImages}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border sticky bottom-0 bg-surface -mx-6 px-6 -mb-6 pb-6">
             <Btn type="button" variant="ghost" onClick={onClose} className="cursor-pointer">Cancel</Btn>
             <Btn type="submit" disabled={mutation.isPending} className="cursor-pointer">
               {mutation.isPending ? "Posting..." : "Post Ad"}

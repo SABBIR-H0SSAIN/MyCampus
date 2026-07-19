@@ -38,18 +38,11 @@ export default function Login() {
       
       const { token, user } = response.data;
       
-      if (user.role !== "student") {
-        // Log them out immediately if they do not have student privileges
-        await api.post('/api/auth/logout', {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setError("Administrative accounts must use the admin login portal.");
-        return;
-      }
+
       
       login(token, user);
       
-      const from = location.state?.from?.pathname || "/app";
+      const from = location.state?.from?.pathname || (user.role === 'admin' ? "/admin" : "/app");
       navigate(from, { replace: true });
     } catch (err: any) {
       if (err.response?.data?.message) {
@@ -67,16 +60,20 @@ export default function Login() {
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4">
-      <div className="mb-8">
+      <div className="mb-6">
         <Logo />
       </div>
+
+      {/* Minimal greeting — just text, no card. */}
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+          Welcome back<span className="text-primary">.</span>
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">Sign in to your campus.</p>
+      </div>
+
       <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6 md:p-8 shadow-sm">
         <form className="space-y-5" onSubmit={handleSubmit}>
-          <div className="space-y-1.5 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-            <p className="text-sm text-muted-foreground">Sign in with your KUET student email.</p>
-          </div>
-          
           {error && (
             <div className="rounded-md bg-blood/10 p-3 text-sm text-blood border border-blood/20">
               {error}
@@ -84,10 +81,10 @@ export default function Login() {
           )}
 
           <Field label="Email" required>
-            <Input 
-              type="email" 
-              placeholder="you@stud.kuet.ac.bd" 
-              required 
+            <Input
+              type="email"
+              placeholder="you@kuet.ac.bd"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
@@ -96,12 +93,11 @@ export default function Login() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground">Password <span className="text-blood">*</span></span>
-              <Link to="/forgot-password" className="text-[10px] text-primary hover:underline cursor-pointer">Forgot?</Link>
             </div>
-            <Input 
-              type="password" 
-              placeholder="••••••••" 
-              required 
+            <Input
+              type="password"
+              placeholder="••••••••"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
@@ -112,9 +108,6 @@ export default function Login() {
           </Btn>
           <p className="pt-2 text-center text-xs text-muted-foreground">
             No account? <Link to="/register" className="font-medium text-primary hover:underline cursor-pointer">Sign up</Link>
-          </p>
-          <p className="pt-2 text-center text-[10px] text-muted-foreground">
-            <Link to="/admin/login" className="hover:underline cursor-pointer">Admin login</Link>
           </p>
         </form>
       </div>

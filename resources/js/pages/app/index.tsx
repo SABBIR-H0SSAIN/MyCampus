@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Badge, Card, Section, Stat } from "@/components/ui-bits";
 import { announcements, badges, notifications, quickActions, recentActivity, stats, bloodRequests } from "@/lib/mock-data";
-import { ArrowRight, Award, Tag, FileUp, RefreshCw, Droplet, Home, UserCog, Bell, TrendingUp, AlertTriangle } from "lucide-react";
+import { ArrowRight, Award, Tag, FileUp, RefreshCw, Droplet, Home, UserCog, Bell, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { useQuery } from "@tanstack/react-query";
@@ -21,9 +21,8 @@ export default function Dashboard() {
   });
 
   const earnedBadges = badges.filter((b) => b.earned);
-  
+
   const currentStats = data?.stats || stats;
-  const urgent = data?.urgentBloodRequest || null;
   const recentActivities = data?.recentActivity || recentActivity;
   const unreadNotifs = data?.unreadNotifs || [];
 
@@ -32,29 +31,12 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Hero greeting */}
-      <section className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary-soft via-surface to-surface p-6 md:p-8">
-        <div className="absolute inset-0 bg-grid opacity-30" aria-hidden />
-        <div className="relative flex flex-wrap items-start justify-between gap-6">
-          <div className="min-w-0">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-primary">Welcome back</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">{user?.name?.split(" ")[0]}, your campus is live.</h1>
-            <p className="mt-2 text-sm text-muted-foreground">{user?.department} · Batch {user?.batch} · Roll {user?.roll_number}</p>
-          </div>
-        </div>
+      {/* Onboarding — plain text, no card chrome */}
+      <section>
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Welcome back, {user?.name?.split(" ")[0]}.</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Choose an action below to get started.</p>
+        <p className="mt-3 font-mono text-[11px] text-muted-foreground">{user?.department} · Batch {user?.batch} · Roll {user?.roll_number}</p>
       </section>
-
-      {/* Urgent banner */}
-      {urgent && (
-        <Link to="/app/blood" className="flex items-center gap-4 rounded-xl border border-blood/30 bg-blood/5 p-4 transition hover:bg-blood/10 cursor-pointer">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-blood/15 text-blood"><AlertTriangle className="h-4 w-4" /></div>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2"><Badge variant="blood">URGENT</Badge><span className="font-mono text-[11px] text-muted-foreground">{urgent.posted}</span></div>
-            <p className="mt-1 truncate text-sm"><span className="font-semibold text-blood">{urgent.group}</span> needed · {urgent.units} units · {urgent.hospital}</p>
-          </div>
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-      )}
 
       {/* Stats grid */}
       <Section title="Your contribution">
@@ -72,9 +54,11 @@ export default function Dashboard() {
           {quickActions.map((a) => {
             const Icon = iconMap[a.icon];
             return (
-              <Link key={a.key} to={a.to} className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-surface p-4 transition hover:border-primary/40 hover:bg-primary-soft/30 cursor-pointer">
-                <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary-soft text-primary transition group-hover:scale-105"><Icon className="h-4 w-4" /></div>
-                <span className="text-center text-[11px] font-medium leading-tight">{a.label}</span>
+              <Link key={a.key} to={a.to} className="group flex flex-col items-center gap-2.5 rounded-xl border border-border bg-surface p-4 transition-all duration-200 hover:border-primary/30 hover:bg-primary-soft/20 hover:shadow-md hover:shadow-primary/5 cursor-pointer card-hover-lift">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 text-primary transition-all duration-200 group-hover:scale-110 group-hover:from-primary/25 group-hover:to-primary/10 group-hover:shadow-sm">
+                  <Icon className="h-4.5 w-4.5" />
+                </div>
+                <span className="text-center text-[11px] font-medium leading-tight text-muted-foreground group-hover:text-foreground transition-colors">{a.label}</span>
               </Link>
             );
           })}
@@ -83,18 +67,29 @@ export default function Dashboard() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Activity timeline */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 overflow-hidden">
           <div className="flex items-center justify-between border-b border-border p-4">
-            <h3 className="text-sm font-semibold">Recent activity</h3>
-            <button className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground cursor-pointer">View all</button>
+            <h3 className="text-sm font-semibold flex items-center gap-2">
+              <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              Recent activity
+            </h3>
+            <button className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground cursor-pointer transition-colors">View all</button>
           </div>
           <ul className="divide-y divide-border">
-            {recentActivities.map((a: any) => (
-              <li key={a.id} className="flex items-start gap-3 p-4">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+            {recentActivities.map((a: any, i: number) => (
+              <li key={a.id} className="flex items-start gap-3 p-4 hover:bg-surface-hover/50 transition-colors">
+                <div className="relative mt-0.5">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                  </span>
+                  {/* Connecting line */}
+                  {i < recentActivities.length - 1 && (
+                    <div className="absolute top-6 left-1/2 -translate-x-1/2 w-px h-[calc(100%+8px)] bg-border" />
+                  )}
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm">{a.text}</p>
-                  <p className="font-mono text-[10px] text-muted-foreground">{a.time}</p>
+                  <p className="font-mono text-[10px] text-muted-foreground mt-0.5">{a.time}</p>
                 </div>
               </li>
             ))}
@@ -103,20 +98,25 @@ export default function Dashboard() {
 
         {/* Notifications + Badges */}
         <div className="space-y-6">
-          <Card>
+          <Card className="overflow-hidden">
             <div className="flex items-center justify-between border-b border-border p-4">
-              <h3 className="flex items-center gap-2 text-sm font-semibold"><Bell className="h-4 w-4" /> Notifications</h3>
+              <h3 className="flex items-center gap-2 text-sm font-semibold">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Bell className="h-3.5 w-3.5" />
+                </div>
+                Notifications
+              </h3>
               <Badge variant="primary">{unreadNotifs.length} new</Badge>
             </div>
             <ul className="divide-y divide-border">
-              {unreadNotifs.slice(0, 3).map((n) => (
-                <li key={n.id} className="p-4 text-sm">
+              {unreadNotifs.slice(0, 3).map((n: any) => (
+                <li key={n.id} className="p-4 text-sm hover:bg-surface-hover/50 transition-colors">
                   <p className="line-clamp-2">{n.title}</p>
                   <p className="mt-1 font-mono text-[10px] text-muted-foreground">{n.time}</p>
                 </li>
               ))}
             </ul>
-            <Link to="/app/notifications" className="block border-t border-border p-3 text-center text-xs font-medium text-primary hover:bg-primary-soft/50 cursor-pointer">See all</Link>
+            <Link to="/app/notifications" className="block border-t border-border p-3 text-center text-xs font-medium text-primary hover:bg-primary-soft/30 cursor-pointer transition-colors">See all</Link>
           </Card>
         </div>
       </div>

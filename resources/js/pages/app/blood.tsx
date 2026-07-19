@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
+import { useSearchParams } from "react-router-dom";
+import {
   Droplet, Phone, MapPin, Calendar, Plus, X, ShieldCheck, Trash2, Edit, CheckCircle, Clock
 } from "lucide-react";
 import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/components/ui-bits";
@@ -201,6 +202,38 @@ export default function BloodNetwork() {
     return data;
   }, [items, filterTab, filterGroup]);
 
+  // Global search bar (?open=<id>) → blood has no detail modal, so we scroll
+  // the matching card into view and pulse-highlight it briefly so the user
+  // can find it. URL is then cleaned so refresh doesn't re-trigger.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  useEffect(() => {
+    const openId = searchParams.get("open");
+    if (!openId || !Array.isArray(items) || items.length === 0) return;
+    const match = items.find(i => String(i.id) === openId);
+    if (!match) return;
+    // Clear filters so the card is definitely visible.
+    setFilterTab("all");
+    setFilterGroup("All");
+    // Wait a tick for re-render then scroll.
+    const t = setTimeout(() => {
+      const el = cardRefs.current[String(match.id)];
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightId(String(match.id));
+        setTimeout(() => setHighlightId(null), 1800);
+      }
+    }, 80);
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.delete("open");
+      return next;
+    }, { replace: true });
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, items]);
+
   return (
     <div className="space-y-5">
       <PageHeader title="Blood Network" description="Active requests from verified KUET students.">
@@ -233,9 +266,18 @@ export default function BloodNetwork() {
           {filtered.map((b) => {
             const isEmergency = b.priority === "Emergency";
             const isResolved = b.status === "Resolved";
+            const isHighlighted = highlightId === String(b.id);
 
             return (
-              <Card key={b.id} className={cn("overflow-hidden flex flex-col", isEmergency && !isResolved ? "border-blood/40 bg-blood/5" : "", isResolved ? "opacity-60 grayscale-[0.5]" : "")}>
+              <div
+                key={b.id}
+                ref={(el) => { cardRefs.current[String(b.id)] = el; }}
+                className={cn(
+                  "rounded-xl transition-all duration-500",
+                  isHighlighted && "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/20",
+                )}
+              >
+              <Card className={cn("overflow-hidden flex flex-col", isEmergency && !isResolved ? "border-blood/40 bg-blood/5" : "", isResolved ? "opacity-60 grayscale-[0.5]" : "")}>
                 <div className="flex items-start gap-4 p-5 flex-1">
                   <div className={cn("grid h-14 w-14 shrink-0 place-items-center rounded-xl text-lg font-bold font-mono", isEmergency && !isResolved ? "bg-blood text-blood-foreground" : "bg-blood/10 text-blood")}>
                     {b.blood_group}
@@ -299,6 +341,7 @@ export default function BloodNetwork() {
                   )
                 )}
               </Card>
+              </div>
             );
           })}
         </div>

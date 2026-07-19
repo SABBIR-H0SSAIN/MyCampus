@@ -6,6 +6,7 @@ type User = {
   name: string;
   email: string;
   registration_status: string;
+  rejection_reason?: string;
   roll_number?: string;
   department?: string;
   batch?: number;

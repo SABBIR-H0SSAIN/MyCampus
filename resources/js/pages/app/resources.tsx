@@ -1,12 +1,14 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  FileText, Download, Star, Bookmark, Plus, Search, Trash2, Edit, X, Upload, ExternalLink
+import {
+  FileText, Download, Star, Bookmark, Plus, Search, Trash2, Edit, X, Upload, ExternalLink, Flag
 } from "lucide-react";
 import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/components/ui-bits";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
+import { useOpenFromSearchParam } from "@/hooks/useOpenFromSearchParam";
+import { ReportModal } from "@/components/ReportModal";
 
 type ResourceItem = {
   id: string;
@@ -172,7 +174,7 @@ function CreateResourceModal({ initialData, onClose, onSuccess }: { initialData?
 }
 
 // ─── Details Modal ─────────────────────────────────────────────────────────────
-function ResourceDetailsModal({ item, onClose }: { item: ResourceItem, onClose: () => void }) {
+function ResourceDetailsModal({ item, onClose, onReport }: { item: ResourceItem, onClose: () => void, onReport: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -224,6 +226,15 @@ function ResourceDetailsModal({ item, onClose }: { item: ResourceItem, onClose: 
 
         <div className="mt-6 pt-5 border-t border-border flex justify-end gap-3 items-center">
           <p className="text-xs font-mono text-muted-foreground mr-auto">{item.size}</p>
+          {!item.selfPosted && (
+            <button 
+              onClick={() => { onClose(); onReport(); }}
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition cursor-pointer flex items-center justify-center"
+              aria-label="Report Resource"
+            >
+              <Flag className="h-4 w-4" />
+            </button>
+          )}
           {item.file_url ? (
             <a href={item.file_url} target="_blank" rel="noreferrer" download>
               <Btn className="cursor-pointer gap-2"><Download className="h-4 w-4" /> Download File</Btn>
@@ -248,6 +259,7 @@ export default function ResourceHub() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ResourceItem | null>(null);
   const [viewItem, setViewItem] = useState<ResourceItem | null>(null);
+  const [reportingItem, setReportingItem] = useState<ResourceItem | null>(null);
 
   const queryClient = useQueryClient();
   const { data: items = [], isLoading } = useQuery<ResourceItem[]>({
@@ -275,6 +287,9 @@ export default function ResourceHub() {
     if (filterTab === "my") data = data.filter(i => i.selfPosted);
     return data;
   }, [items, filterTab]);
+
+  // Global search bar (?open=<id>) → auto-open detail modal for that resource
+  useOpenFromSearchParam(items, setViewItem);
 
   return (
     <div className="space-y-5">
@@ -402,7 +417,16 @@ export default function ResourceHub() {
 
       {isCreateModalOpen && <CreateResourceModal onClose={() => setIsCreateModalOpen(false)} onSuccess={() => setIsCreateModalOpen(false)} />}
       {editingItem && <CreateResourceModal initialData={editingItem} onClose={() => setEditingItem(null)} onSuccess={() => setEditingItem(null)} />}
-      {viewItem && <ResourceDetailsModal item={viewItem} onClose={() => setViewItem(null)} />}
+      {viewItem && <ResourceDetailsModal item={viewItem} onClose={() => setViewItem(null)} onReport={() => setReportingItem(viewItem)} />}
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={!!reportingItem}
+        onClose={() => setReportingItem(null)}
+        reportableType="App\Models\Resource"
+        reportableId={reportingItem?.id || ""}
+        itemTitle={reportingItem?.title}
+      />
     </div>
   );
 }

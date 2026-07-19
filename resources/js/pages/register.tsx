@@ -2,7 +2,7 @@ import { useState } from "react";
 import { departments } from "@/lib/mock-data";
 import { Logo } from "@/components/brand/Logo";
 import { Btn, Field, Input, Select } from "@/components/ui-bits";
-import { Upload, ArrowRight, ShieldCheck } from "lucide-react";
+import { Upload, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "@/lib/api";
 
@@ -52,9 +52,10 @@ export default function Register() {
       </header>
       <main className="mx-auto max-w-2xl px-4 py-10">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full bg-primary-soft text-primary"><ShieldCheck className="h-5 w-5" /></div>
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Sign up as a KUETian</h1>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">Submit your details and a clear photo of your student ID card. Admins typically approve within 24 hours.</p>
+          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl text-foreground">
+            Join MyCampus<span className="text-primary">.</span>
+          </h1>
+          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">For KUET students. Verified by your student ID · approved in ~24h.</p>
         </div>
         <form className="space-y-6 rounded-2xl border border-border bg-surface p-6 md:p-8" onSubmit={handleSubmit}>
           <div className="grid gap-5 md:grid-cols-2">

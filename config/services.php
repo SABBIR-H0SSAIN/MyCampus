@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'gemini' => [
+        'key'         => env('GEMINI_API_KEY'),
+        'model'       => env('GEMINI_MODEL', 'gemini-flash-lite-latest'),
+        'daily_limit' => (int) env('GEMINI_DAILY_LIMIT', 5),
+    ],
+
+    'brevo' => [
+        'key' => env('BREVO_API_KEY'),
+    ],
+
 ];

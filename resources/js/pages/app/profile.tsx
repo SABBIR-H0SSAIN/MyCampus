@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { Badge, Btn, Card, Stat } from "@/components/ui-bits";
-import { Mail, Phone, Github, Linkedin, Pencil, ShieldCheck, Globe } from "lucide-react";
+import { Mail, Phone, Github, Linkedin, Pencil, ShieldCheck, Globe, Camera, Loader2 } from "lucide-react";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -13,6 +13,8 @@ export default function Profile() {
 
   const { id } = useParams<{ id?: string }>();
   const { user: currentUser } = useAuth();
+  const queryClient = useQueryClient();
+  const coverInputRef = useRef<HTMLInputElement>(null);
   
   const isOwnProfile = !id || (currentUser && id === currentUser.id.toString());
 
@@ -43,6 +45,27 @@ export default function Profile() {
     enabled: !!isOwnProfile
   });
 
+  // Cover photo upload mutation
+  const coverMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const fd = new FormData();
+      fd.append("cover", file);
+      const res = await api.post("/api/profile/cover", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile', id] });
+    }
+  });
+
+  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    coverMutation.mutate(file);
+  }
+
   if (isLoading || !data) return <div className="p-8 text-center text-muted-foreground">Loading profile...</div>;
 
   const profile = data.profile || {};
@@ -64,8 +87,28 @@ export default function Profile() {
       {/* Cover + avatar */}
       <div className="overflow-hidden rounded-2xl border border-border bg-surface">
         {/* Cover photo */}
-        <div className="h-36 md:h-48 bg-gradient-to-br from-primary/30 to-info/20">
+        <div className="relative h-36 md:h-48 bg-gradient-to-br from-primary/30 to-info/20">
           <img src={cover} className="h-full w-full object-cover opacity-70" alt="" />
+          {isOwnProfile && (
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-background/80 hover:bg-background border border-border text-[11px] font-medium text-foreground shadow-sm transition cursor-pointer"
+            >
+              {coverMutation.isPending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Camera className="h-3 w-3" />
+              )}
+              <span>{profile.cover_path ? "Change Cover" : "Add Cover"}</span>
+            </button>
+          )}
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleCoverChange}
+          />
         </div>
         {/* Profile info row */}
         <div className="px-5 py-5">
@@ -132,7 +175,9 @@ export default function Profile() {
               {userListings.length > 0 ? userListings.map((m: any) => (
                 <Card key={m.id} className="overflow-hidden">
                   <div className="aspect-square bg-secondary">
-                    <img src={m.images?.[0] ? `/storage/${m.images[0]}` : "https://placehold.co/400?text=No+Image"} className="h-full w-full object-cover" alt="" />
+                    {/* Marketplace controller already stores the absolute public path
+                        (e.g. "/storage/marketplace/foo.jpg"), so we use m.images[0] as-is. */}
+                    <img src={m.images?.[0] || "https://placehold.co/400?text=No+Image"} className="h-full w-full object-cover" alt="" />
                   </div>
                   <div className="p-3">
                     <p className="truncate text-sm font-semibold">{m.title}</p>

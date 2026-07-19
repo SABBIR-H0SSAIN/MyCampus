@@ -1,13 +1,14 @@
 import { useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { 
-  Search, Plus, MapPin, Calendar, CheckCircle, Eye, 
+import {
+  Search, Plus, MapPin, Calendar, CheckCircle, Eye,
   Trash2, X, SlidersHorizontal, PackageSearch, ImagePlus, Phone, ShieldCheck, Flag
 } from "lucide-react";
 import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
+import { useOpenFromSearchParam } from "@/hooks/useOpenFromSearchParam";
 
 type LostFoundItem = {
   id: string;
@@ -327,12 +328,19 @@ export default function LostAndFound() {
     if (activeTab === "found") data = data.filter(i => i.type === "found");
     if (activeTab === "my") data = data.filter(i => i.selfPosted);
     if (selectedCategory !== "All") data = data.filter(i => i.category === selectedCategory);
-    if (search.trim()) data = data.filter(i => 
-      i.title.toLowerCase().includes(search.toLowerCase()) || 
+    if (search.trim()) data = data.filter(i =>
+      i.title.toLowerCase().includes(search.toLowerCase()) ||
       i.description.toLowerCase().includes(search.toLowerCase())
     );
     return data;
   }, [items, activeTab, search, selectedCategory]);
+
+  // Global search bar (?open=<id>) → auto-open detail modal for that item.
+  // Switches to "all" tab so the item is visible when modal opens.
+  useOpenFromSearchParam(
+    items,
+    (item) => { setActiveTab("all"); setDetailItem(item); }
+  );
 
   return (
     <div className="space-y-5">
@@ -372,8 +380,17 @@ export default function LostAndFound() {
       )}
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3].map(i => <div key={i} className="h-64 rounded-2xl bg-secondary/50 animate-pulse border border-border" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 xl:gap-5">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="rounded-2xl bg-secondary/50 animate-pulse border border-border overflow-hidden">
+              <div className="aspect-[4/3]" />
+              <div className="p-4 space-y-3">
+                <div className="h-3 w-1/3 rounded bg-secondary" />
+                <div className="h-4 w-3/4 rounded bg-secondary" />
+                <div className="h-4 w-1/2 rounded bg-secondary" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border py-20 text-center">
@@ -381,12 +398,13 @@ export default function LostAndFound() {
           <p className="text-sm font-medium text-muted-foreground">No items found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 xl:gap-5">
           {filtered.map(item => (
             <Card key={item.id} className="overflow-hidden flex flex-col group cursor-pointer hover:border-primary/30 transition" onClick={() => setDetailItem(item)}>
-              <div className="h-40 bg-secondary relative">
+              {/* Image area — fixed aspect ratio keeps cards visually uniform regardless of viewport width */}
+              <div className="relative aspect-[4/3] bg-secondary overflow-hidden">
                 {item.images.length > 0 ? (
-                  <img src={item.images[0]} alt="" className="w-full h-full object-cover" />
+                  <img src={item.images[0]} alt="" className="absolute inset-0 w-full h-full object-cover" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
                     <PackageSearch className="h-10 w-10" />
@@ -399,22 +417,26 @@ export default function LostAndFound() {
                   {item.status === "resolved" && <Badge variant="primary" className="shadow-sm backdrop-blur-md">RESOLVED</Badge>}
                 </div>
               </div>
-              <div className="p-4 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-2">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{item.category}</p>
-                  <p className="text-[10px] text-muted-foreground">{item.postedAt}</p>
+
+              {/* Body — fixed min-height ensures every card in a row is the same height */}
+              <div className="p-4 flex-1 flex flex-col min-h-[180px]">
+                <div className="flex justify-between items-start mb-2 gap-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest truncate">{item.category}</p>
+                  <p className="text-[10px] text-muted-foreground shrink-0">{item.postedAt}</p>
                 </div>
-                <h3 className="font-semibold text-base mb-1 line-clamp-1">{item.title}</h3>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
-                  <MapPin className="h-3 w-3 shrink-0" /> <span className="truncate">{item.location}</span>
+                <h3 className="font-semibold text-sm mb-1 line-clamp-2 leading-snug">{item.title}</h3>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3 min-w-0">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{item.location}</span>
                 </div>
-                
-                <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <img src={item.reporterAvatar} alt="" className="h-6 w-6 rounded-full bg-secondary object-cover" />
-                    <span className="text-xs font-medium text-muted-foreground truncate max-w-[100px]">{item.reporter}</span>
+
+                {/* Footer pinned to bottom of card so all cards align */}
+                <div className="mt-auto pt-3 border-t border-border flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <img src={item.reporterAvatar} alt="" className="h-6 w-6 rounded-full bg-secondary object-cover shrink-0" />
+                    <span className="text-xs font-medium text-muted-foreground truncate">{item.reporter}</span>
                   </div>
-                  <Btn variant="outline" size="sm" className="h-7 text-[10px] px-2 rounded-md cursor-pointer">
+                  <Btn variant="outline" size="sm" className="h-7 text-[10px] px-2 rounded-md cursor-pointer shrink-0">
                     View <Eye className="h-3 w-3 ml-1" />
                   </Btn>
                 </div>

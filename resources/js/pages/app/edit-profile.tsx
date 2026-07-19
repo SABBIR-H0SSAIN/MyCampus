@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, Field, Input, Textarea, Btn, PageHeader } from "@/components/ui-bits";
 import {
   User, Mail, Phone, Github, Linkedin, Globe, Camera,
-  Loader2, CheckCircle, AlertCircle, ArrowLeft
+  Loader2, CheckCircle, AlertCircle, ArrowLeft, Sparkles
 } from "lucide-react";
 import api from "@/lib/api";
 
@@ -15,6 +15,8 @@ export default function EditProfile() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -53,6 +55,9 @@ export default function EditProfile() {
   const profile = data?.profile || {};
   const avatar = avatarPreview
     || (profile.avatar_path ? `/storage/${profile.avatar_path}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(data?.name || "U")}&background=random`);
+  
+  const cover = coverPreview
+    || (profile.cover_path ? `/storage/${profile.cover_path}` : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop");
 
   // Update profile mutation
   const updateMutation = useMutation({
@@ -98,6 +103,33 @@ export default function EditProfile() {
     avatarMutation.mutate(file);
   }
 
+  // Cover photo upload mutation
+  const coverMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const fd = new FormData();
+      fd.append("cover", file);
+      const res = await api.post("/api/profile/cover", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      setSuccessMsg("Cover photo updated successfully!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    },
+    onError: () => {
+      setErrorMsg("Failed to upload cover photo.");
+    },
+  });
+
+  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverPreview(URL.createObjectURL(file));
+    coverMutation.mutate(file);
+  }
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
@@ -110,13 +142,16 @@ export default function EditProfile() {
   if (isLoading || !data) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span className="text-sm">Loading profile...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-3xl mx-auto">
       <PageHeader title="Edit Profile" description="Update your public profile information.">
         <Btn variant="outline" size="sm" onClick={() => navigate("/app/profile")}>
           <ArrowLeft className="h-4 w-4" /> Back to profile
@@ -125,37 +160,42 @@ export default function EditProfile() {
 
       {/* Feedback banners */}
       {successMsg && (
-        <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
+        <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success/8 px-4 py-3 text-sm text-success animate-in fade-in slide-in-from-top-2 duration-300">
           <CheckCircle className="h-4 w-4 shrink-0" /> {successMsg}
         </div>
       )}
       {errorMsg && (
-        <div className="flex items-center gap-2 rounded-lg border border-blood/30 bg-blood/10 px-4 py-3 text-sm text-blood">
+        <div className="flex items-center gap-2 rounded-xl border border-blood/30 bg-blood/8 px-4 py-3 text-sm text-blood animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="h-4 w-4 shrink-0" /> {errorMsg}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Avatar section */}
-        <Card className="p-5">
-          <h2 className="mb-4 text-sm font-semibold">Profile Picture</h2>
-          <div className="flex items-center gap-5">
-            <div className="relative shrink-0">
+        <Card className="p-6 overflow-hidden relative">
+          {/* Decorative bg */}
+          <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/5 blur-3xl" aria-hidden />
+          <h2 className="mb-4 text-sm font-semibold flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            Profile Picture
+          </h2>
+          <div className="flex items-center gap-5 relative">
+            <div className="relative shrink-0 group">
               <img
                 src={avatar}
                 alt="Avatar"
-                className="h-20 w-20 rounded-2xl border-2 border-border object-cover"
+                className="h-24 w-24 rounded-2xl border-2 border-border object-cover shadow-md group-hover:shadow-lg transition-shadow duration-200"
               />
               <button
                 type="button"
                 onClick={() => avatarInputRef.current?.click()}
-                className="absolute -right-2 -bottom-2 grid h-7 w-7 place-items-center rounded-full bg-primary text-primary-foreground shadow hover:bg-primary/90 transition"
+                className="absolute -right-2 -bottom-2 grid h-8 w-8 place-items-center rounded-xl bg-primary text-primary-foreground shadow-md hover:bg-primary/90 hover:scale-105 transition-all duration-200 cursor-pointer"
                 aria-label="Change avatar"
               >
                 {avatarMutation.isPending ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Camera className="h-3 w-3" />
+                  <Camera className="h-3.5 w-3.5" />
                 )}
               </button>
               <input
@@ -167,7 +207,7 @@ export default function EditProfile() {
               />
             </div>
             <div className="space-y-1">
-              <p className="font-semibold">{data?.name}</p>
+              <p className="font-semibold text-lg">{data?.name}</p>
               <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
                 {data?.roll_number} · {data?.department} · Batch {data?.batch}
               </p>
@@ -178,9 +218,47 @@ export default function EditProfile() {
           </div>
         </Card>
 
+        {/* Cover Photo section */}
+        <Card className="p-6 overflow-hidden relative">
+          <h2 className="mb-4 text-sm font-semibold flex items-center gap-2">
+            <Camera className="h-4 w-4 text-primary" />
+            Cover Photo
+          </h2>
+          <div className="space-y-4">
+            <div className="relative h-40 w-full rounded-2xl border border-border overflow-hidden bg-secondary">
+              <img src={cover} className="h-full w-full object-cover" alt="Cover" />
+              <button
+                type="button"
+                onClick={() => coverInputRef.current?.click()}
+                className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background/85 backdrop-blur-md border border-white/10 text-xs font-semibold text-foreground hover:bg-background shadow-lg transition-all duration-200 cursor-pointer active:scale-95"
+              >
+                {coverMutation.isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Camera className="h-3 w-3" />
+                )}
+                <span>Change Cover</span>
+              </button>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleCoverChange}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Click the "Change Cover" button to upload a cover image (max 5 MB). Ideal ratio: 3:1.
+            </p>
+          </div>
+        </Card>
+
         {/* Basic info */}
-        <Card className="p-5 space-y-5">
-          <h2 className="text-sm font-semibold">Basic Information</h2>
+        <Card className="p-6 space-y-5">
+          <h2 className="text-sm font-semibold flex items-center gap-2">
+            <User className="h-4 w-4 text-primary" />
+            Basic Information
+          </h2>
           <div className="grid gap-5 md:grid-cols-2">
             <Field label="Full Name">
               <div className="relative">
@@ -207,13 +285,14 @@ export default function EditProfile() {
               <Input value={data?.department} disabled className="opacity-60 cursor-not-allowed" />
             </Field>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
             Email, roll number, and department cannot be changed. Contact admin for corrections.
           </p>
         </Card>
 
         {/* Bio */}
-        <Card className="p-5 space-y-4">
+        <Card className="p-6 space-y-4">
           <h2 className="text-sm font-semibold">About You</h2>
           <Field label="Bio" hint="Tell others a bit about yourself. Max 1000 characters.">
             <Textarea
@@ -224,13 +303,18 @@ export default function EditProfile() {
               onChange={handleChange}
               maxLength={1000}
             />
-            <p className="text-right text-[11px] text-muted-foreground">{form.bio.length} / 1000</p>
+            <div className="flex justify-end">
+              <p className="text-[11px] text-muted-foreground tabular-nums">{form.bio.length} / 1000</p>
+            </div>
           </Field>
         </Card>
 
         {/* Contact */}
-        <Card className="p-5 space-y-4">
-          <h2 className="text-sm font-semibold">Contact Information</h2>
+        <Card className="p-6 space-y-4">
+          <h2 className="text-sm font-semibold flex items-center gap-2">
+            <Phone className="h-4 w-4 text-primary" />
+            Contact Information
+          </h2>
           <Field label="Phone Number" hint="Your phone number is visible to other verified students.">
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -247,8 +331,11 @@ export default function EditProfile() {
         </Card>
 
         {/* Social links */}
-        <Card className="p-5 space-y-4">
-          <h2 className="text-sm font-semibold">Social Links</h2>
+        <Card className="p-6 space-y-4">
+          <h2 className="text-sm font-semibold flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary" />
+            Social Links
+          </h2>
           <div className="space-y-4">
             <Field label="GitHub">
               <div className="relative">
@@ -265,7 +352,7 @@ export default function EditProfile() {
             </Field>
             <Field label="LinkedIn">
               <div className="relative">
-                <Linkedin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground cursor-pointer" />
+                <Linkedin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   name="linkedin"
                   type="url"
@@ -293,7 +380,7 @@ export default function EditProfile() {
         </Card>
 
         {/* Save button */}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 pb-4">
           <Btn type="button" variant="outline" onClick={() => navigate("/app/profile")}>
             Cancel
           </Btn>

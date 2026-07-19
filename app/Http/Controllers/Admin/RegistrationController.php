@@ -5,18 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\RegistrationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 
 class RegistrationController extends Controller
 {
-    /**
-     * List pending registrations (paginated).
-     *
-     * Supports filtering by status via query parameter.
-     */
+    // List pending registrations (supports filtering by status)
     public function index(Request $request): JsonResponse
     {
         $status = $request->query('status', 'pending');
@@ -54,9 +51,7 @@ class RegistrationController extends Controller
         return response()->json($registrations);
     }
 
-    /**
-     * Show a single registration.
-     */
+    // Show a single registration
     public function show(User $user): JsonResponse
     {
         return response()->json([
@@ -82,9 +77,7 @@ class RegistrationController extends Controller
         ]);
     }
 
-    /**
-     * Approve a user's registration.
-     */
+    // Approve a user's registration
     public function approve(Request $request, User $user): JsonResponse
     {
         if ($user->registration_status !== RegistrationStatus::Pending) {
@@ -95,10 +88,12 @@ class RegistrationController extends Controller
 
         $user->update([
             'registration_status' => RegistrationStatus::Approved,
-            'approved_at' => now(),
-            'approved_by' => $request->user()->id,
-            'rejection_reason' => null,
+            'approved_at'         => now(),
+            'approved_by'         => $request->user()->id,
+            'rejection_reason'    => null,
         ]);
+
+        // Mail API integration removed as requested.
 
         return response()->json([
             'message' => 'Registration approved successfully.',
@@ -111,9 +106,7 @@ class RegistrationController extends Controller
         ]);
     }
 
-    /**
-     * Reject a user's registration.
-     */
+    // Reject a user's registration
     public function reject(Request $request, User $user): JsonResponse
     {
         $request->validate([
@@ -143,11 +136,7 @@ class RegistrationController extends Controller
         ]);
     }
 
-    /**
-     * Serve the student ID card image.
-     *
-     * Only accessible to admins. Serves from local disk storage.
-     */
+    // Serve the student ID card image (admin only)
     public function idCard(User $user): mixed
     {
         if (!$user->student_id_card_path) {

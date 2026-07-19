@@ -12,14 +12,7 @@ use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
-    /**
-     * Handle a login request.
-     *
-     * Validates credentials and checks registration status before issuing a token.
-     * - Pending users get a 403 with status info.
-     * - Rejected users get a 403 with rejection reason.
-     * - Approved users get a Sanctum token.
-     */
+    // Handle a login request. Validates credentials and checks registration status before issuing a token. - Pending users get a 403 with status info. - Rejected users get a 403 with rejection reason. - Approved users get a Sanctum token.
     public function login(LoginRequest $request): JsonResponse
     {
         $user = User::where('email', $request->email)->first();
@@ -56,11 +49,7 @@ class LoginController extends Controller
         ]);
     }
 
-    /**
-     * Handle a logout request.
-     *
-     * Revokes the current access token.
-     */
+    // Handle a logout request. Revokes the current access token.
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();

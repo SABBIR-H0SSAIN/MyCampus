@@ -11,6 +11,7 @@ import AppDashboard from './pages/app/index';
 import Login from './pages/login';
 import Register from './pages/register';
 import PendingApproval from './pages/pending-approval';
+import RegistrationRejected from './pages/registration-rejected';
 import ProfilePage from './pages/app/profile';
 import EditProfile from './pages/app/edit-profile';
 import Marketplace from './pages/app/marketplace';
@@ -25,8 +26,9 @@ import RoommateFinder from './pages/app/roommates';
 import { AdminLayout } from './components/layout/AdminLayout';
 import AdminDashboard from './pages/admin/index';
 import RegistrationsQueue from './pages/admin/registrations';
-import AdminLogin from './pages/admin/login';
+import AdminReports from './pages/admin/reports';
 import AdminAnnouncements from './pages/admin/announcements';
+import UsersManagement from './pages/admin/users';
 import NotificationsPage from './pages/app/notifications';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -51,10 +53,10 @@ function App() {
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
             
             {/* General App Routes */}
             <Route path="/pending-approval" element={<PendingApproval />} />
+            <Route path="/registration-rejected" element={<RegistrationRejected />} />
             <Route path="/app" element={<ProtectedRoute requireRole="student" />}>
               <Route element={<AppLayout />}>
                 <Route index element={<AppDashboard />} />
@@ -69,8 +71,8 @@ function App() {
                 <Route path="announcements" element={<AnnouncementsPage />} />
                 <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
-                <Route path="profile/:id" element={<ProfilePage />} />
                 <Route path="profile/edit" element={<EditProfile />} />
+                <Route path="profile/:id" element={<ProfilePage />} />
               </Route>
             </Route>
             
@@ -79,8 +81,8 @@ function App() {
               <Route element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="registrations" element={<RegistrationsQueue />} />
-                <Route path="users" element={<div className="p-8 text-center">Users Page Placeholder</div>} />
-                <Route path="reports" element={<div className="p-8 text-center">Reports Page Placeholder</div>} />
+                <Route path="users" element={<UsersManagement />} />
+                <Route path="reports" element={<AdminReports />} />
                 <Route path="announcements" element={<AdminAnnouncements />} />
               </Route>
             </Route>

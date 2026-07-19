@@ -6,7 +6,7 @@ type ProtectedRouteProps = {
 };
 
 export function ProtectedRoute({ requireRole }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, role } = useAuth();
+  const { isAuthenticated, isLoading, role, user } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -17,14 +17,24 @@ export function ProtectedRoute({ requireRole }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Redirect users who are not fully approved (except admins, who don't go through student approval)
+  if (user && role !== 'admin') {
+    if (user.registration_status === 'pending') {
+      return <Navigate to="/pending-approval" replace />;
+    }
+    if (user.registration_status === 'rejected') {
+      return <Navigate to="/registration-rejected" replace />;
+    }
+  }
+
   if (requireRole && role !== requireRole) {
     if (requireRole === 'student' && role === 'admin') {
-      return <Navigate to="/admin" replace />;
-    }
-    if (requireRole === 'admin' && role === 'student') {
+      // Admins are allowed to view student routes
+    } else if (requireRole === 'admin' && role === 'student') {
       return <Navigate to="/app" replace />;
+    } else {
+      return <Navigate to="/login" replace />;
     }
-    return <Navigate to="/login" replace />;
   }
 
   return <Outlet />;

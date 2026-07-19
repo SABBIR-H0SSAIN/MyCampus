@@ -9,6 +9,7 @@ import {
 import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
 import { marketplaceListings, marketplaceCategories } from "@/lib/mock-data";
+import { useOpenFromSearchParam } from "@/hooks/useOpenFromSearchParam";
 
 //  Types 
 type ListingResponse = {
@@ -248,7 +249,7 @@ function ResponsesModal({
 }
 
 // ─── Detail Modal ─────────────────────────────────────────────────────────────
-function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMarkSold, onDelete, onRequestBuy, onViewResponses }: {
+function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMarkSold, onDelete, onRequestBuy, onViewResponses, onReport }: {
   listing: Listing;
   hasRequested: boolean;
   onClose: () => void;
@@ -258,6 +259,7 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
   onDelete: (id: string) => void;
   onRequestBuy: (l: Listing) => void;
   onViewResponses: (l: Listing) => void;
+  onReport: (l: Listing) => void;
 }) {
   const [imgIdx, setImgIdx] = useState(0);
   const imgs = listing.images?.length ? listing.images : [listing.image];
@@ -412,7 +414,10 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
                     <Heart className={cn("h-4 w-4", listing.favorites && "fill-current")} />
                     {listing.favorites ? "Saved" : "Save"}
                   </button>
-                  <button className="flex flex-1 items-center justify-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm font-medium hover:bg-secondary transition cursor-pointer">
+                  <button 
+                    onClick={() => { onClose(); onReport(listing); }}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-md border border-border px-4 py-2.5 text-sm font-medium hover:bg-secondary transition cursor-pointer"
+                  >
                     <Flag className="h-4 w-4" /> Report
                   </button>
                 </div>
@@ -645,7 +650,7 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
         {/* Seller row */}
         <div className="flex items-center gap-1.5 pt-0.5 cursor-pointer" onClick={e => e.stopPropagation()}>
           <img src={listing.sellerAvatar} alt="" className="h-4 w-4 rounded-full border border-border bg-secondary" />
-          <Link to="/app/profile" className="font-mono text-[10px] text-muted-foreground hover:text-primary transition truncate cursor-pointer">
+          <Link to={`/app/profile/${listing.sellerRoll}`} className="font-mono text-[10px] text-muted-foreground hover:text-primary transition truncate cursor-pointer">
             {listing.seller} · {listing.department}
           </Link>
         </div>
@@ -656,6 +661,7 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { ReportModal } from "@/components/ReportModal";
 
 // ─── Main Page ─────────────────────────────────────────────────────────────
 export default function Marketplace() {
@@ -673,6 +679,7 @@ export default function Marketplace() {
   
   const [requestingListing, setRequestingListing] = useState<Listing | null>(null);
   const [viewingResponses, setViewingResponses] = useState<Listing | null>(null);
+  const [reportingListing, setReportingListing] = useState<Listing | null>(null);
   
   const queryClient = useQueryClient();
 
@@ -787,6 +794,9 @@ export default function Marketplace() {
     active: Array.isArray(listings) ? listings.filter(l => l.selfPosted && !l.sold).length : 0,
     sold: Array.isArray(listings) ? listings.filter(l => l.selfPosted && l.sold).length : 0,
   };
+
+  // Global search bar (?open=<id>) → auto-open detail modal for that listing
+  useOpenFromSearchParam(listings, setDetailListing);
 
   return (
     <div className="space-y-5">
@@ -962,6 +972,7 @@ export default function Marketplace() {
           onDelete={handleDelete}
           onRequestBuy={setRequestingListing}
           onViewResponses={setViewingResponses}
+          onReport={setReportingListing}
         />
       )}
 
@@ -993,6 +1004,15 @@ export default function Marketplace() {
           onSave={handleSaveEdit}
         />
       )}
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={!!reportingListing}
+        onClose={() => setReportingListing(null)}
+        reportableType="App\Models\MarketplaceListing"
+        reportableId={reportingListing?.id || ""}
+        itemTitle={reportingListing?.title}
+      />
     </div>
   );
 }
