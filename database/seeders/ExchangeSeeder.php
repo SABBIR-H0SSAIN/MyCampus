@@ -33,6 +33,7 @@ class ExchangeSeeder extends Seeder
                 'desire' => 'TP-Link TL-WR841N Wireless Router',
                 'description' => 'Rapoo E6080 ultra-slim bluetooth keyboard. Want to exchange with a good router.',
                 'phone' => '+880 1711 000014',
+                'location' => 'TSC, Dhaka',
                 'images' => [
                     '/storage/marketplace/rapoo_keyboard.jpg',
                     '/storage/marketplace/tplink_router.jpg'
@@ -43,6 +44,7 @@ class ExchangeSeeder extends Seeder
                 'desire' => 'Click Ceiling Fan',
                 'description' => 'Looking to trade my stand fan and wardrobe setup for a ceiling fan.',
                 'phone' => '+880 1711 000014',
+                'location' => 'Mirpur 10, Dhaka',
                 'images' => [
                     '/storage/marketplace/click_fan.jpg',
                     '/storage/marketplace/click_ceiling_fan.png'
@@ -53,6 +55,7 @@ class ExchangeSeeder extends Seeder
                 'desire' => 'Semi-Double Bed & Mattress Set',
                 'description' => 'Study table in great condition. Need a semi-double bed frame and mattress.',
                 'phone' => '+880 1711 000014',
+                'location' => 'Dhanmondi 27, Dhaka',
                 'images' => [
                     '/storage/marketplace/bookshelf_study_table.jpg',
                     '/storage/marketplace/semi_double_bed.jpg'
@@ -63,6 +66,7 @@ class ExchangeSeeder extends Seeder
                 'desire' => 'Metal Trunk Chest',
                 'description' => 'Need to store heavier things. Looking to swap my storage rack for a metal trunk chest.',
                 'phone' => '+880 1711 000014',
+                'location' => 'Farmgate, Dhaka',
                 'images' => [
                     '/storage/marketplace/red_rack.jpg',
                     '/storage/marketplace/trunk.png'
@@ -73,6 +77,7 @@ class ExchangeSeeder extends Seeder
                 'desire' => 'Wooden Study Table with Bookshelf',
                 'description' => 'Trade my plastic chair with a study table. Negotiable.',
                 'phone' => '+880 1711 000014',
+                'location' => 'Uttara Sector 7, Dhaka',
                 'images' => [
                     '/storage/marketplace/plastic_chair.png',
                     '/storage/marketplace/bookshelf_study_table.jpg'
@@ -83,6 +88,7 @@ class ExchangeSeeder extends Seeder
                 'desire' => 'RFL Gas Stove with LP Gas Cylinder',
                 'description' => 'Wall moving fan. Need a gas stove set with a cylinder for my hostel room.',
                 'phone' => '+880 1711 000014',
+                'location' => 'Fulbarigate, Khulna',
                 'images' => [
                     '/storage/marketplace/pak_wall_fan.jpg',
                     '/storage/marketplace/gas_stove.jpg'
