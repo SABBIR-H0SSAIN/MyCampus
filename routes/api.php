@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Route;
 // ──────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
     Route::post('/register', [RegisterController::class, 'register']);
-    Route::post('/login', [LoginController::class, 'login']);
+    Route::post('/login', [LoginController::class, 'login'])->name('login');
 });
 
 // ──────────────────────────────────────────────
@@ -99,6 +99,10 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     
     // - Reports
     Route::post('/reports', [ReportController::class, 'store']);
+
+    // - AI Real-Time Assistant Chat (RAG)
+    Route::post('/ai/chat', [\App\Http\Controllers\AiChatController::class, 'chat'])
+        ->middleware('ai.ratelimit');
 
     // Announcements (read-only for students)
     Route::get('/announcements', [AnnouncementController::class, 'index']);
