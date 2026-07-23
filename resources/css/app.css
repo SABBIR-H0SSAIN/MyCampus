@@ -340,3 +340,34 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* ── Custom Leaflet Map Styling ───────────────────────────────────────── */
+.leaflet-popup-content-wrapper {
+  background: var(--color-card) !important;
+  color: var(--color-foreground) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--color-card) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: none !important;
+}
+
+.leaflet-container {
+  font-family: var(--font-sans) !important;
+}
+
+.custom-map-pin-icon {
+  background: transparent !important;
+  border: none !important;
+}
