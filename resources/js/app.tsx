@@ -23,6 +23,7 @@ import ResourceHub from './pages/app/resources';
 import AnnouncementsPage from './pages/app/announcements';
 import LostAndFound from './pages/app/lost-found';
 import RoommateFinder from './pages/app/roommates';
+import CampusMapPage from './pages/app/map';
 import { AdminLayout } from './components/layout/AdminLayout';
 import AdminDashboard from './pages/admin/index';
 import RegistrationsQueue from './pages/admin/registrations';
@@ -60,6 +61,7 @@ function App() {
             <Route path="/app" element={<ProtectedRoute requireRole="student" />}>
               <Route element={<AppLayout />}>
                 <Route index element={<AppDashboard />} />
+                <Route path="map" element={<CampusMapPage />} />
                 <Route path="marketplace" element={<Marketplace />} />
                 <Route path="marketplace/new" element={<NewListing />} />
                 <Route path="exchange" element={<Exchange />} />

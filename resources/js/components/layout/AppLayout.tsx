@@ -17,14 +17,17 @@ import {
   Shield,
   LogOut,
 } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { GlobalSearchBar } from "@/components/layout/GlobalSearchBar";
+import { AiAssistantWidget } from "@/components/ai/AiAssistantWidget";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 const nav = [
   { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/app/profile", label: "Profile", icon: User },
+  { to: "/app/map", label: "Campus Map", icon: MapPin },
   { to: "/app/marketplace", label: "Marketplace", icon: ShoppingBag },
   { to: "/app/exchange", label: "Exchange", icon: RefreshCw },
   { to: "/app/blood", label: "Blood Network", icon: Droplet },
@@ -291,6 +294,9 @@ export function AppLayout() {
           </div>
         </>
       )}
+
+      {/* Floating RAG AI Assistant Widget */}
+      <AiAssistantWidget />
     </div>
   );
 }
