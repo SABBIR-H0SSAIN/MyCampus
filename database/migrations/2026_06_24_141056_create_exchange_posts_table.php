@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('phone');
             $table->json('images')->nullable();
+            $table->string('location')->nullable();
             $table->enum('status', ['Open', 'Pending', 'Completed'])->default('Open');
             $table->timestamps();
         });

@@ -12,6 +12,7 @@ class ExchangePost extends Model
         'desire',
         'description',
         'phone',
+        'location',
         'images',
         'status',
     ];

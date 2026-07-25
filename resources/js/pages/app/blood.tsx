@@ -7,6 +7,8 @@ import {
 import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
+import { LocationMap } from "@/components/ui/LocationMap";
+import { MultiPostMap } from "@/components/ui/MultiPostMap";
 
 type BloodDonationResponse = {
   id: number;
@@ -165,7 +167,7 @@ function ResponsesModal({ item, onClose }: { item: BloodRequestItem, onClose: ()
 // ─── Main Page ─────────────────────────────────────────────────────────────
 export default function BloodNetwork() {
   const [filterGroup, setFilterGroup] = useState("All");
-  const [filterTab, setFilterTab] = useState<"all" | "my">("all");
+  const [filterTab, setFilterTab] = useState<"all" | "map" | "my">("all");
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<BloodRequestItem | null>(null);
@@ -242,6 +244,7 @@ export default function BloodNetwork() {
 
       <div className="flex gap-1 border-b border-border overflow-x-auto no-scrollbar">
         <button onClick={() => setFilterTab("all")} className={cn("px-4 py-2.5 text-sm font-medium transition whitespace-nowrap cursor-pointer", filterTab === "all" ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground")}>All Requests</button>
+        <button onClick={() => setFilterTab("map")} className={cn("px-4 py-2.5 text-sm font-medium transition whitespace-nowrap cursor-pointer", filterTab === "map" ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground")}>🏥 Hospital Map</button>
         <button onClick={() => setFilterTab("my")} className={cn("px-4 py-2.5 text-sm font-medium transition whitespace-nowrap cursor-pointer", filterTab === "my" ? "border-b-2 border-primary text-primary" : "text-muted-foreground hover:text-foreground")}>My Requests</button>
       </div>
 
@@ -252,7 +255,18 @@ export default function BloodNetwork() {
         ))}
       </div>
 
-      {isLoading ? (
+      {filterTab === "map" ? (
+        <MultiPostMap
+          items={filtered.map((b) => ({
+            id: b.id,
+            title: `${b.blood_group} Needed (${b.units} units)`,
+            subtitle: `${b.hospital} · ${b.priority}`,
+            location: b.hospital,
+            categoryTag: `BLOOD ${b.blood_group}`,
+          }))}
+          height="h-[520px]"
+        />
+      ) : isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
           {[1,2,3].map(i => <div key={i} className="h-40 rounded-2xl bg-secondary/50 animate-pulse border border-border" />)}
         </div>
@@ -295,6 +309,16 @@ export default function BloodNetwork() {
                       <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> {b.hospital}</p>
                       <p className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5" /> {new Date(b.date_time).toLocaleString()}</p>
                     </div>
+
+                    <div className="pt-1">
+                      <LocationMap
+                        address={b.hospital}
+                        title={`Hospital: ${b.hospital}`}
+                        subtitle={`${b.blood_group} Needed (${b.units} unit${b.units > 1 ? "s" : ""})`}
+                        height="h-36"
+                      />
+                    </div>
+
                     {b.notes && <p className="text-xs italic text-foreground/80 line-clamp-2">"{b.notes}"</p>}
                     
                     <div className="pt-2 flex items-center gap-2 text-xs text-muted-foreground">

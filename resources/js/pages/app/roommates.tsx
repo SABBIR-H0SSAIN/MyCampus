@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { useOpenFromSearchParam } from "@/hooks/useOpenFromSearchParam";
+import { LocationMap } from "@/components/ui/LocationMap";
+import { MultiPostMap } from "@/components/ui/MultiPostMap";
 
 // --- Types ---
 interface Profile {
@@ -112,7 +114,7 @@ function Btn({ children, className, variant = "primary", size = "default", ...pr
 export default function RoommateFinder() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"explore" | "my_ads" | "my_requests">("explore");
+  const [activeTab, setActiveTab] = useState<"explore" | "map" | "my_ads" | "my_requests">("explore");
   const [genderFilter, setGenderFilter] = useState("All");
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -258,7 +260,7 @@ export default function RoommateFinder() {
 
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex gap-1 border-b border-border overflow-x-auto pb-[1px]">
-          {(["explore", "my_ads", "my_requests"] as const).map(tab => (
+          {(["explore", "map", "my_ads", "my_requests"] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -267,13 +269,14 @@ export default function RoommateFinder() {
               )}
             >
               {tab === "explore" ? "Explore Ads" :
+                tab === "map" ? "🗺 Location Map" :
                 tab === "my_ads" ? `My Ads` :
                   `My Requests`}
             </button>
           ))}
         </div>
 
-        {activeTab === "explore" && (
+        {(activeTab === "explore" || activeTab === "map") && (
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -298,7 +301,19 @@ export default function RoommateFinder() {
         )}
       </div>
 
-      {activeTab === "explore" || activeTab === "my_ads" ? (
+      {activeTab === "map" ? (
+        <MultiPostMap
+          items={(displayPosts || []).map((post) => ({
+            id: post.id,
+            title: post.title,
+            subtitle: `Rent: ৳${post.budget}/mo · ${post.status}`,
+            location: post.location,
+            categoryTag: "ROOMMATE",
+            onSelect: () => setViewingDetails(post),
+          }))}
+          height="h-[560px]"
+        />
+      ) : activeTab === "explore" || activeTab === "my_ads" ? (
         postsLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map(i => <div key={i} className="h-64 rounded-xl bg-secondary animate-pulse" />)}
@@ -614,6 +629,19 @@ export default function RoommateFinder() {
                   <p className="text-xs text-muted-foreground">{viewingDetails.user?.profile?.department}</p>
                   <p className="text-xs text-muted-foreground capitalize">{viewingDetails.user?.gender}</p>
                 </div>
+              </div>
+
+              {/* Location OpenStreetMap */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" /> Apartment Location Map
+                </h3>
+                <LocationMap
+                  address={viewingDetails.location}
+                  title={viewingDetails.title}
+                  subtitle={`Rent: ৳${viewingDetails.budget}/mo`}
+                  height="h-52"
+                />
               </div>
 
               {viewingDetails.lifestyle && viewingDetails.lifestyle.length > 0 && (
