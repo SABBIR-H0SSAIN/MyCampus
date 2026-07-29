@@ -56,6 +56,8 @@ export default function CampusMapPage() {
         title: r.title,
         subtitle: `Rent: ৳${r.budget}/mo · ${r.status}`,
         location: r.location,
+        lat: r.latitude ? Number(r.latitude) : undefined,
+        lng: r.longitude ? Number(r.longitude) : undefined,
         categoryTag: "ROOMMATE",
       });
     });
@@ -67,6 +69,8 @@ export default function CampusMapPage() {
         title: `${b.blood_group} Needed (${b.units} units)`,
         subtitle: `${b.hospital} · ${b.priority}`,
         location: b.hospital,
+        lat: b.latitude ? Number(b.latitude) : undefined,
+        lng: b.longitude ? Number(b.longitude) : undefined,
         categoryTag: `BLOOD ${b.blood_group}`,
       });
     });
@@ -77,7 +81,9 @@ export default function CampusMapPage() {
         id: `mk-${m.id}`,
         title: m.title,
         subtitle: `Price: ৳${m.price} · ${m.category}`,
-        location: "Central Campus, Dhaka",
+        location: m.location || "KUET Campus",
+        lat: m.latitude ? Number(m.latitude) : undefined,
+        lng: m.longitude ? Number(m.longitude) : undefined,
         categoryTag: "MARKETPLACE",
       });
     });
@@ -88,7 +94,9 @@ export default function CampusMapPage() {
         id: `ex-${ex.id}`,
         title: `Offering: ${ex.offering}`,
         subtitle: `Wants: ${ex.desire}`,
-        location: "Campus TSC, Dhaka",
+        location: ex.location || "Campus TSC, KUET",
+        lat: ex.latitude ? Number(ex.latitude) : undefined,
+        lng: ex.longitude ? Number(ex.longitude) : undefined,
         categoryTag: "EXCHANGE",
       });
     });
@@ -99,7 +107,9 @@ export default function CampusMapPage() {
         id: `lf-${lf.id}`,
         title: lf.title,
         subtitle: `${String(lf.type).toUpperCase()} · ${lf.category}`,
-        location: lf.location || "Campus Library",
+        location: lf.location || "Central Library, KUET",
+        lat: lf.latitude ? Number(lf.latitude) : undefined,
+        lng: lf.longitude ? Number(lf.longitude) : undefined,
         categoryTag: "LOST & FOUND",
       });
     });

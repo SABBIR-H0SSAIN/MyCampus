@@ -7,8 +7,8 @@ import {
 import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
-import { LocationMap } from "@/components/ui/LocationMap";
 import { MultiPostMap } from "@/components/ui/MultiPostMap";
+import { LocationPicker } from "@/components/ui/LocationPicker";
 
 type BloodDonationResponse = {
   id: number;
@@ -24,6 +24,8 @@ type BloodRequestItem = {
   blood_group: string;
   units: number;
   hospital: string;
+  latitude?: number | null;
+  longitude?: number | null;
   date_time: string;
   contact: string;
   priority: "Standard" | "Emergency";
@@ -45,6 +47,8 @@ function CreateRequestModal({ initialData, onClose, onSuccess }: { initialData?:
     blood_group: initialData?.blood_group || BLOOD_GROUPS[0],
     units: initialData?.units || 1,
     hospital: initialData?.hospital || "",
+    latitude: initialData?.latitude || null,
+    longitude: initialData?.longitude || null,
     date_time: initialData?.date_time ? initialData.date_time.slice(0, 16) : "",
     contact: initialData?.contact || "",
     priority: initialData?.priority || "Standard",
@@ -87,8 +91,18 @@ function CreateRequestModal({ initialData, onClose, onSuccess }: { initialData?:
             <Field label="Units required" required>
               <Input type="number" min={1} value={form.units} onChange={e => setForm(f => ({ ...f, units: parseInt(e.target.value) || 1 }))} required />
             </Field>
-            <Field label="Hospital / Location" required>
-              <Input value={form.hospital} onChange={e => setForm(f => ({ ...f, hospital: e.target.value }))} placeholder="e.g. Khulna Medical College Hospital" required />
+            <Field label="Hospital / Location" required className="md:col-span-2">
+              <LocationPicker
+                value={form.hospital}
+                lat={form.latitude}
+                lng={form.longitude}
+                onChange={({ address, lat, lng }) =>
+                  setForm((f) => ({ ...f, hospital: address, latitude: lat, longitude: lng }))
+                }
+                placeholder="e.g. Khulna Medical College Hospital"
+                required
+                modalTitle="Select Hospital Location on Map"
+              />
             </Field>
             <Field label="Required date/time" required>
               <Input type="datetime-local" value={form.date_time} onChange={e => setForm(f => ({ ...f, date_time: e.target.value }))} required />
@@ -262,6 +276,8 @@ export default function BloodNetwork() {
             title: `${b.blood_group} Needed (${b.units} units)`,
             subtitle: `${b.hospital} · ${b.priority}`,
             location: b.hospital,
+            lat: b.latitude ? Number(b.latitude) : undefined,
+            lng: b.longitude ? Number(b.longitude) : undefined,
             categoryTag: `BLOOD ${b.blood_group}`,
           }))}
           height="h-[520px]"
@@ -308,15 +324,6 @@ export default function BloodNetwork() {
                     <div className="space-y-1 text-xs text-muted-foreground">
                       <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" /> {b.hospital}</p>
                       <p className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5" /> {new Date(b.date_time).toLocaleString()}</p>
-                    </div>
-
-                    <div className="pt-1">
-                      <LocationMap
-                        address={b.hospital}
-                        title={`Hospital: ${b.hospital}`}
-                        subtitle={`${b.blood_group} Needed (${b.units} unit${b.units > 1 ? "s" : ""})`}
-                        height="h-36"
-                      />
                     </div>
 
                     {b.notes && <p className="text-xs italic text-foreground/80 line-clamp-2">"{b.notes}"</p>}

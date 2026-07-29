@@ -9,6 +9,7 @@ import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
 import { useOpenFromSearchParam } from "@/hooks/useOpenFromSearchParam";
+import { LocationPicker } from "@/components/ui/LocationPicker";
 
 type LostFoundItem = {
   id: string;
@@ -17,6 +18,8 @@ type LostFoundItem = {
   category: string;
   description: string;
   location: string;
+  latitude?: number | null;
+  longitude?: number | null;
   date: string;
   images: string[];
   status: "active" | "resolved";
@@ -43,6 +46,8 @@ function CreateReportModal({ initialData, onClose, onSuccess }: { initialData?: 
     category: initialData?.category || CATEGORIES[0],
     description: initialData?.description || "",
     location: initialData?.location || "",
+    latitude: initialData?.latitude || null,
+    longitude: initialData?.longitude || null,
     date: initialData?.date || new Date().toISOString().split('T')[0],
     phone: initialData?.phone || "",
   });
@@ -54,7 +59,9 @@ function CreateReportModal({ initialData, onClose, onSuccess }: { initialData?: 
   const mutation = useMutation({
     mutationFn: async () => {
       const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      Object.entries(form).forEach(([k, v]) => {
+        if (v !== null && v !== undefined) fd.append(k, v.toString());
+      });
       existingImages.forEach(img => fd.append('existingImages[]', img));
       newImages.forEach(img => fd.append('images[]', img));
       if (initialData) {
@@ -139,8 +146,18 @@ function CreateReportModal({ initialData, onClose, onSuccess }: { initialData?: 
           </Field>
 
           <div className="grid gap-6 sm:grid-cols-2">
-            <Field label={form.type === "lost" ? "Last Seen Location" : "Found Location"} required>
-              <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="e.g., Central Library, CSE Building" required />
+            <Field label={form.type === "lost" ? "Last Seen Location" : "Found Location"} required className="sm:col-span-2">
+              <LocationPicker
+                value={form.location}
+                lat={form.latitude}
+                lng={form.longitude}
+                onChange={({ address, lat, lng }) =>
+                  setForm((f) => ({ ...f, location: address, latitude: lat, longitude: lng }))
+                }
+                placeholder="e.g., Central Library, CSE Building, KUET"
+                required
+                modalTitle="Select Item Location on Map"
+              />
             </Field>
             <Field label={form.type === "lost" ? "Date Lost" : "Date Found"} required>
               <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required max={new Date().toISOString().split('T')[0]} />

@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { useOpenFromSearchParam } from "@/hooks/useOpenFromSearchParam";
 import { LocationMap } from "@/components/ui/LocationMap";
 import { MultiPostMap } from "@/components/ui/MultiPostMap";
+import { LocationPicker } from "@/components/ui/LocationPicker";
 
 // --- Types ---
 interface Profile {
@@ -24,9 +25,16 @@ interface Profile {
 interface User {
   id: number;
   name: string;
-  gender?: string;
+  email: string;
+  department?: string;
+  batch?: string;
   roll_number?: string;
-  profile?: Profile;
+  role?: string;
+  profile?: {
+    avatar_url?: string;
+    bio?: string;
+    phone?: string;
+  };
 }
 
 interface RoommatePost {
@@ -34,6 +42,8 @@ interface RoommatePost {
   user_id: number;
   title: string;
   location: string;
+  latitude?: number | null;
+  longitude?: number | null;
   budget: number;
   move_in_date: string;
   lifestyle: string[];
@@ -308,6 +318,8 @@ export default function RoommateFinder() {
             title: post.title,
             subtitle: `Rent: ৳${post.budget}/mo · ${post.status}`,
             location: post.location,
+            lat: post.latitude ? Number(post.latitude) : undefined,
+            lng: post.longitude ? Number(post.longitude) : undefined,
             categoryTag: "ROOMMATE",
             onSelect: () => setViewingDetails(post),
           }))}
@@ -638,6 +650,8 @@ export default function RoommateFinder() {
                 </h3>
                 <LocationMap
                   address={viewingDetails.location}
+                  lat={viewingDetails.latitude ? Number(viewingDetails.latitude) : undefined}
+                  lng={viewingDetails.longitude ? Number(viewingDetails.longitude) : undefined}
                   title={viewingDetails.title}
                   subtitle={`Rent: ৳${viewingDetails.budget}/mo`}
                   height="h-52"
@@ -786,10 +800,11 @@ export default function RoommateFinder() {
 // --- Create Modal Component ---
 function CreateRoommateModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
   const [selectedLifestyles, setSelectedLifestyles] = useState<string[]>([]);
+  const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   
-  const { register, handleSubmit, formState: { errors } } = useForm<CreatePostForm>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CreatePostForm>({
     resolver: zodResolver(createPostSchema),
-    defaultValues: { budget: 0 }
+    defaultValues: { budget: 0, location: "" }
   });
 
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -810,12 +825,12 @@ function CreateRoommateModal({ onClose, onSuccess }: { onClose: () => void, onSu
     const newFiles = [...imageFiles];
     newFiles.splice(index, 1);
     setImageFiles(newFiles);
-    setPreviews(newFiles.map(file => URL.createObjectURL(file)));
+    setImagePreviews(newFiles.map(file => URL.createObjectURL(file)));
   };
 
   const mutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      return api.post("/api/roommates", formData, {
+      return await api.post("/api/roommates", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
     },
@@ -832,6 +847,10 @@ function CreateRoommateModal({ onClose, onSuccess }: { onClose: () => void, onSu
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("location", data.location);
+    if (coords.lat !== null && coords.lng !== null) {
+      formData.append("latitude", coords.lat.toString());
+      formData.append("longitude", coords.lng.toString());
+    }
     formData.append("budget", data.budget.toString());
     formData.append("move_in_date", data.move_in_date);
     formData.append("description", data.description);
@@ -882,9 +901,20 @@ function CreateRoommateModal({ onClose, onSuccess }: { onClose: () => void, onSu
               {errors.title && <p className="text-xs text-blood">{errors.title.message}</p>}
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium">Location/Area *</label>
-              <input {...register("location")} placeholder="e.g. Fulbarigate" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-sm font-medium">Location / Flat Address *</label>
+              <LocationPicker
+                value={watch("location") || ""}
+                lat={coords.lat}
+                lng={coords.lng}
+                onChange={({ address, lat, lng }) => {
+                  setValue("location", address, { shouldValidate: true });
+                  setCoords({ lat, lng });
+                }}
+                placeholder="e.g. Fulbarigate / KUET Road"
+                required
+                modalTitle="Select Roommate Flat Location on Map"
+              />
               {errors.location && <p className="text-xs text-blood">{errors.location.message}</p>}
             </div>
 

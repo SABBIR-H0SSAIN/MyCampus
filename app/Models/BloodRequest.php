@@ -14,6 +14,8 @@ class BloodRequest extends Model
         'blood_group',
         'units',
         'hospital',
+        'latitude',
+        'longitude',
         'date_time',
         'contact',
         'priority',
@@ -22,6 +24,8 @@ class BloodRequest extends Model
     ];
 
     protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
         'date_time' => 'datetime',
     ];
 

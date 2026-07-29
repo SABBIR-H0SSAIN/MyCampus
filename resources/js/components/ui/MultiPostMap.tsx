@@ -138,14 +138,16 @@ export function MultiPostMap({
         }
       }
 
-      const locKey = (item.location || "campus").toLowerCase().trim();
+      const locKey = item.lat && item.lng 
+        ? `${item.lat.toFixed(4)},${item.lng.toFixed(4)}`
+        : (item.location || "campus").toLowerCase().trim();
       const count = locationCounts[locKey] || 0;
       locationCounts[locKey] = count + 1;
 
-      // Apply radial spread for stacked pins so markers are offset neatly around the area
+      // Apply radial spread for stacked pins at the exact same point so markers don't occlude
       if (count > 0) {
         const angle = count * (2 * Math.PI / 5);
-        const radius = 0.003 * Math.sqrt(count); // ~300m radial spread
+        const radius = 0.0015 * Math.sqrt(count); // ~150m radial spread
         baseLat += radius * Math.cos(angle);
         baseLng += radius * Math.sin(angle);
       }

@@ -10,6 +10,8 @@ class RoommatePost extends Model
         'user_id',
         'title',
         'location',
+        'latitude',
+        'longitude',
         'budget',
         'move_in_date',
         'lifestyle',
@@ -21,6 +23,8 @@ class RoommatePost extends Model
     ];
 
     protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
         'lifestyle' => 'array',
         'move_in_date' => 'date',
         'images' => 'array',

@@ -14,6 +14,8 @@ class MarketplaceListing extends Model
         'condition',
         'category',
         'location',
+        'latitude',
+        'longitude',
         'phone',
         'images',
         'views',
@@ -21,6 +23,8 @@ class MarketplaceListing extends Model
     ];
 
     protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
         'is_sold' => 'boolean',
         'images' => 'array',
     ];
@@ -33,5 +37,10 @@ class MarketplaceListing extends Model
     public function marketplaceRequests()
     {
         return $this->hasMany(MarketplaceRequest::class);
+    }
+
+    public function bids()
+    {
+        return $this->hasMany(MarketplaceBid::class, 'marketplace_listing_id');
     }
 }

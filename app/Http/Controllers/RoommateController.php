@@ -31,6 +31,8 @@ class RoommateController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'location' => 'required|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'budget' => 'required|numeric',
             'move_in_date' => 'required|date',
             'lifestyle' => 'nullable|array',
@@ -66,6 +68,8 @@ class RoommateController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'location' => 'sometimes|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'budget' => 'sometimes|numeric',
             'move_in_date' => 'sometimes|date',
             'lifestyle' => 'nullable|array',

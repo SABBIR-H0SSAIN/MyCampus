@@ -13,6 +13,8 @@ class LostAndFoundItem extends Model
         'category',
         'description',
         'location',
+        'latitude',
+        'longitude',
         'date',
         'phone',
         'images',
@@ -20,6 +22,8 @@ class LostAndFoundItem extends Model
     ];
 
     protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
         'images' => 'array',
         'date' => 'date',
     ];
