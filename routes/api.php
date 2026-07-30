@@ -62,6 +62,11 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class])->group(function (
     Route::get('/marketplace/requests/my', [MarketplaceListingController::class, 'myRequests']);
     Route::post('/marketplace/{id}/request', [MarketplaceListingController::class, 'storeRequest']);
     Route::put('/marketplace/requests/{id}/accept', [MarketplaceListingController::class, 'acceptRequest']);
+    Route::post('/marketplace/{id}/bids', [MarketplaceListingController::class, 'storeBid']);
+    Route::get('/marketplace/{id}/bids', [MarketplaceListingController::class, 'getBids']);
+    Route::put('/marketplace/bids/{id}/accept', [MarketplaceListingController::class, 'acceptBid']);
+    Route::put('/marketplace/bids/{id}/reject', [MarketplaceListingController::class, 'rejectBid']);
+    Route::delete('/marketplace/bids/{id}', [MarketplaceListingController::class, 'withdrawBid']);
     Route::post('marketplace/{id}/favorite', [MarketplaceListingController::class, 'toggleFavorite']);
     Route::apiResource('marketplace', MarketplaceListingController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
 

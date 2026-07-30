@@ -5,6 +5,7 @@ import { Btn, Field, Input, Select, Textarea, PageHeader } from "@/components/ui
 import { marketplaceCategories } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import api from "@/lib/api";
+import { LocationPicker } from "@/components/ui/LocationPicker";
 
 const CONDITIONS = ["Like new", "Excellent", "Good", "Fair"];
 const MAX_IMAGES = 6;
@@ -16,10 +17,12 @@ export default function NewListing() {
   const [form, setForm] = useState({
     title: "", category: "", price: "", condition: "Like new",
     location: "", phone: "", description: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
   const [submitting, setSubmitting] = useState(false);
 
-  const set = (k: keyof typeof form, v: string) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k: keyof typeof form, v: any) => setForm(f => ({ ...f, [k]: v }));
 
   const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []).slice(0, MAX_IMAGES - previews.length);
@@ -49,6 +52,10 @@ export default function NewListing() {
       formData.append('price', form.price);
       formData.append('condition', form.condition);
       formData.append('location', form.location);
+      if (form.latitude !== null && form.longitude !== null) {
+        formData.append('latitude', form.latitude.toString());
+        formData.append('longitude', form.longitude.toString());
+      }
       formData.append('phone', form.phone);
       formData.append('description', form.description);
 
@@ -166,13 +173,17 @@ export default function NewListing() {
               {CONDITIONS.map(c => <option key={c}>{c}</option>)}
             </Select>
           </Field>
-          <Field label="Location" required>
-            <Input
-              id="listing-location"
-              placeholder="Hall-3, KUET"
+          <Field label="Location / Pickup Spot" required className="md:col-span-2">
+            <LocationPicker
               value={form.location}
-              onChange={e => set("location", e.target.value)}
+              lat={form.latitude}
+              lng={form.longitude}
+              onChange={({ address, lat, lng }) =>
+                setForm((f) => ({ ...f, location: address, latitude: lat, longitude: lng }))
+              }
+              placeholder="e.g. Hall-3, KUET / Central Library"
               required
+              modalTitle="Select Pickup Location on Map"
             />
           </Field>
           <Field label="Phone number" required>

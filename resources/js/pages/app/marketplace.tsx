@@ -4,12 +4,15 @@ import {
   Search, Heart, MapPin, Plus, Tag, X, SlidersHorizontal,
   Edit3, CheckCircle, Package, Eye, ArrowUpDown, LayoutGrid,
   List, Phone, Flag, ImagePlus, ChevronLeft, ChevronRight,
-  ExternalLink, ShieldCheck, Trash2, MessageSquare, Send
+  ExternalLink, ShieldCheck, Trash2, MessageSquare, Send,
+  Gavel, TrendingUp, Coins, Clock
 } from "lucide-react";
 import { Badge, Btn, Card, PageHeader, Field, Input, Select, Textarea } from "@/components/ui-bits";
 import { cn } from "@/lib/utils";
 import { marketplaceListings, marketplaceCategories } from "@/lib/mock-data";
 import { useOpenFromSearchParam } from "@/hooks/useOpenFromSearchParam";
+import { BidModal } from "@/components/marketplace/BidModal";
+import toast from "react-hot-toast";
 
 //  Types 
 type ListingResponse = {
@@ -27,6 +30,20 @@ type MyRequest = {
   status: "pending" | "accepted" | "declined";
   message: string;
   date: string;
+};
+
+type ListingBid = {
+  id: string;
+  amount: number;
+  message?: string;
+  phone?: string | null;
+  status: string;
+  bidderName: string;
+  bidderAvatar?: string;
+  bidderRoll?: string;
+  bidderDepartment?: string;
+  isMine?: boolean;
+  createdAt?: string;
 };
 
 type Listing = {
@@ -49,6 +66,16 @@ type Listing = {
   favorites: boolean;
   postedAt: string;
   views?: number;
+  bidsCount?: number;
+  highestBid?: number | null;
+  myBid?: {
+    id: string;
+    amount: number;
+    message?: string;
+    status: string;
+    createdAt?: string;
+  } | null;
+  bids?: ListingBid[];
   responses?: ListingResponse[];
 };
 
@@ -186,14 +213,19 @@ function ResponsesModal({
   listing,
   onClose,
   onAccept,
+  onAcceptBid,
+  onRejectBid,
   isPending
 }: {
   listing: Listing;
   onClose: () => void;
   onAccept: (id: string) => void;
+  onAcceptBid: (id: string) => void;
+  onRejectBid: (id: string) => void;
   isPending: boolean;
 }) {
   const responses = listing.responses || [];
+  const bids = listing.bids || [];
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -201,46 +233,92 @@ function ResponsesModal({
       <div className="relative w-full max-w-xl max-h-[85vh] flex flex-col rounded-2xl border border-border bg-surface shadow-2xl">
         <div className="flex shrink-0 items-center justify-between border-b border-border p-4">
           <div>
-            <h3 className="font-semibold text-lg">Purchase Requests</h3>
+            <h3 className="font-semibold text-lg">Purchase Requests & Offers</h3>
             <p className="text-xs text-muted-foreground mt-0.5">For: {listing.title}</p>
           </div>
           <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary text-muted-foreground cursor-pointer"><X className="h-4 w-4 cursor-pointer" /></button>
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {responses.length === 0 ? (
+          {responses.length === 0 && bids.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground">
               <MessageSquare className="h-8 w-8 mx-auto mb-3 opacity-20" />
-              <p>No requests yet.</p>
+              <p>No requests or offers yet.</p>
             </div>
           ) : (
-            responses.map(res => (
-              <div key={res.id} className="border border-border rounded-xl p-4 bg-background">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                    <img src={res.responderAvatar} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
-                    <div>
-                      <p className="font-semibold text-sm">{res.responderName}</p>
-                      <p className="text-xs text-muted-foreground">{res.date}</p>
+            <>
+              {responses.map(res => (
+                <div key={res.id} className="border border-border rounded-xl p-4 bg-background">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                      <img src={res.responderAvatar} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
+                      <div>
+                        <p className="font-semibold text-sm">{res.responderName}</p>
+                        <p className="text-xs text-muted-foreground">{res.date}</p>
+                      </div>
                     </div>
+                    <Badge variant={res.status === "pending" ? "warning" : res.status === "accepted" ? "success" : "default"}>{res.status}</Badge>
                   </div>
-                  <Badge variant={res.status === "pending" ? "warning" : res.status === "accepted" ? "success" : "default"}>{res.status}</Badge>
+                  <div className="bg-secondary/50 rounded-lg p-3 mb-4 border border-border/50">
+                    <p className="text-sm italic">"{res.message}"</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <a href={`tel:${res.responderPhone}`} className="text-sm font-medium text-primary flex items-center gap-1.5 hover:underline">
+                      <Phone className="h-4 w-4" /> {res.responderPhone}
+                    </a>
+                    {res.status === "pending" && !listing.sold && (
+                      <Btn size="sm" onClick={() => onAccept(res.id)} disabled={isPending}>
+                        <CheckCircle className="h-4 w-4 mr-1.5" /> Accept Buyer
+                      </Btn>
+                    )}
+                  </div>
                 </div>
-                <div className="bg-secondary/50 rounded-lg p-3 mb-4 border border-border/50">
-                  <p className="text-sm italic">"{res.message}"</p>
+              ))}
+              {bids.map((bid) => (
+                <div key={bid.id} className={cn(
+                  "border rounded-xl p-4 transition",
+                  bid.status === "accepted" ? "bg-emerald-500/10 border-emerald-500/30" :
+                  bid.status === "rejected" ? "bg-blood/5 border-blood/20 opacity-60" : "bg-background border-border"
+                )}>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                      <img src={bid.bidderAvatar} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
+                      <div>
+                        <p className="font-semibold text-sm flex items-center gap-1.5">
+                          {bid.bidderName} <span className="text-xs text-muted-foreground font-normal">({bid.bidderDepartment})</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">{bid.createdAt}</p>
+                      </div>
+                    </div>
+                    <Badge variant={bid.status === "accepted" ? "success" : bid.status === "rejected" ? "danger" : bid.status === "withdrawn" ? "default" : "warning"} className="capitalize">
+                      {bid.status}
+                    </Badge>
+                  </div>
+                  <div className="bg-primary/5 rounded-lg p-3 mb-4 border border-primary/20 flex flex-col gap-1">
+                    <span className="text-[10px] uppercase font-bold text-primary">Offered Amount</span>
+                    <p className="font-mono text-xl font-bold text-foreground">৳ {bid.amount.toLocaleString()}</p>
+                    {bid.message && <p className="text-sm italic text-muted-foreground mt-1">"{bid.message}"</p>}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    {bid.phone ? (
+                      <a href={`tel:${bid.phone}`} className="text-sm font-medium text-primary flex items-center gap-1.5 hover:underline">
+                        <Phone className="h-4 w-4" /> {bid.phone}
+                      </a>
+                    ) : <span />}
+                    {bid.status === "pending" && !listing.sold && (
+                      <div className="flex items-center gap-2">
+                        <Btn size="sm" onClick={() => onAcceptBid(bid.id)} disabled={isPending}>
+                          <CheckCircle className="h-4 w-4 mr-1.5" /> Accept
+                        </Btn>
+                        <Btn size="sm" variant="outline" onClick={() => onRejectBid(bid.id)} disabled={isPending}>
+                          Decline
+                        </Btn>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <a href={`tel:${res.responderPhone}`} className="text-sm font-medium text-primary flex items-center gap-1.5 hover:underline">
-                    <Phone className="h-4 w-4" /> {res.responderPhone}
-                  </a>
-                  {res.status === "pending" && !listing.sold && (
-                    <Btn size="sm" onClick={() => onAccept(res.id)} disabled={isPending}>
-                      <CheckCircle className="h-4 w-4 mr-1.5" /> Accept Buyer
-                    </Btn>
-                  )}
-                </div>
-              </div>
-            ))
+              ))}
+            </>
           )}
         </div>
       </div>
@@ -249,7 +327,22 @@ function ResponsesModal({
 }
 
 // ─── Detail Modal ─────────────────────────────────────────────────────────────
-function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMarkSold, onDelete, onRequestBuy, onViewResponses, onReport }: {
+function DetailModal({ 
+  listing, 
+  hasRequested, 
+  onClose, 
+  onToggleFav, 
+  onEdit, 
+  onMarkSold, 
+  onDelete, 
+  onRequestBuy, 
+  onViewResponses, 
+  onPlaceBid,
+  onAcceptBid,
+  onRejectBid,
+  onWithdrawBid,
+  onReport 
+}: {
   listing: Listing;
   hasRequested: boolean;
   onClose: () => void;
@@ -259,6 +352,10 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
   onDelete: (id: string) => void;
   onRequestBuy: (l: Listing) => void;
   onViewResponses: (l: Listing) => void;
+  onPlaceBid: (l: Listing) => void;
+  onAcceptBid: (bidId: string) => void;
+  onRejectBid: (bidId: string) => void;
+  onWithdrawBid: (bidId: string) => void;
   onReport: (l: Listing) => void;
 }) {
   const [imgIdx, setImgIdx] = useState(0);
@@ -332,7 +429,22 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
           <div className="flex flex-1 flex-col gap-4 p-5 overflow-y-auto">
             <div>
               <h2 className="text-xl font-bold leading-tight">{listing.title}</h2>
-              <p className="mt-1 font-mono text-2xl font-bold text-primary">৳ {listing.price.toLocaleString()}</p>
+              <div className="mt-1 flex items-baseline gap-3 flex-wrap">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Asking Price</span>
+                  <p className="font-mono text-2xl font-bold text-primary">৳ {listing.price.toLocaleString()}</p>
+                </div>
+                {listing.highestBid && (
+                  <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1">
+                    <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3" /> Top Bid
+                    </span>
+                    <p className="font-mono text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                      ৳ {listing.highestBid.toLocaleString()}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs">
@@ -376,22 +488,136 @@ function DetailModal({ listing, hasRequested, onClose, onToggleFav, onEdit, onMa
               </div>
             </div>
 
+            {/* Live Bids & Offers Section */}
+            <div className="rounded-xl border border-border bg-background p-3.5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Gavel className="h-4 w-4 text-primary" />
+                  <p className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    Live Bids & Offers ({listing.bids?.length || 0})
+                  </p>
+                </div>
+                {!listing.selfPosted && !listing.sold && (
+                  <button
+                    onClick={() => { onClose(); onPlaceBid(listing); }}
+                    className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="h-3 w-3" /> {listing.myBid ? "Update Your Bid" : "Place Bid"}
+                  </button>
+                )}
+              </div>
+
+              {(!listing.bids || listing.bids.length === 0) ? (
+                <p className="text-xs text-muted-foreground italic py-1">
+                  No bids placed yet. Be the first student to make an offer!
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {listing.bids.map((bid) => (
+                    <div
+                      key={bid.id}
+                      className={cn(
+                        "flex items-start justify-between gap-3 p-2.5 rounded-lg border text-xs transition",
+                        bid.status === "accepted" ? "bg-emerald-500/10 border-emerald-500/30" :
+                        bid.status === "rejected" ? "bg-blood/5 border-blood/20 opacity-60" :
+                        bid.isMine ? "bg-primary/5 border-primary/20" : "bg-secondary/40 border-border"
+                      )}
+                    >
+                      <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-sm font-bold text-foreground">
+                            ৳ {bid.amount.toLocaleString()}
+                          </span>
+                          <span className="font-medium text-muted-foreground truncate">
+                            by {bid.bidderName} {bid.bidderDepartment && `(${bid.bidderDepartment})`}
+                          </span>
+                          {bid.isMine && (
+                            <span className="rounded bg-primary/20 text-primary px-1.5 py-0.2 text-[10px] font-semibold">
+                              You
+                            </span>
+                          )}
+                          <Badge
+                            variant={
+                              bid.status === "accepted" ? "success" :
+                              bid.status === "rejected" ? "danger" :
+                              bid.status === "withdrawn" ? "default" : "warning"
+                            }
+                            className="text-[9px] px-1.5 py-0 capitalize"
+                          >
+                            {bid.status}
+                          </Badge>
+                        </div>
+                        {bid.message && (
+                          <p className="text-[11px] text-muted-foreground italic truncate">
+                            "{bid.message}"
+                          </p>
+                        )}
+                        {bid.phone && (
+                          <p className="text-[11px] text-primary font-mono">
+                            Phone: {bid.phone}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Seller / Bidder actions on bid */}
+                      <div className="shrink-0 flex items-center gap-1.5">
+                        {listing.selfPosted && bid.status === "pending" && !listing.sold && (
+                          <>
+                            <button
+                              onClick={() => onAcceptBid(bid.id)}
+                              className="rounded bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-[11px] font-semibold transition cursor-pointer shadow-sm"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => onRejectBid(bid.id)}
+                              className="rounded border border-border bg-background hover:bg-secondary text-muted-foreground px-2 py-1 text-[11px] font-medium transition cursor-pointer"
+                            >
+                              Decline
+                            </button>
+                          </>
+                        )}
+                        {bid.isMine && bid.status === "pending" && (
+                          <button
+                            onClick={() => onWithdrawBid(bid.id)}
+                            className="text-[11px] text-blood hover:underline cursor-pointer"
+                          >
+                            Withdraw
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Actions */}
             {!listing.sold ? (
               <div className="space-y-2">
                 {!listing.selfPosted ? (
-                  hasRequested ? (
-                    <Btn variant="outline" className="w-full text-success border-success/30 bg-success/5" disabled>
-                      <CheckCircle className="h-4 w-4 mr-2" /> Requested
-                    </Btn>
-                  ) : (
-                    <Btn className="w-full cursor-pointer" onClick={() => { onClose(); onRequestBuy(listing); }}>
-                      <MessageSquare className="h-4 w-4 mr-2" /> Request to Buy
-                    </Btn>
-                  )
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <Btn 
+                        className="w-full justify-center bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer shadow-sm" 
+                        onClick={() => { onClose(); onPlaceBid(listing); }}
+                      >
+                        <Gavel className="h-4 w-4 mr-1.5" /> {listing.myBid ? "Update Offer" : "Make Offer"}
+                      </Btn>
+                      {hasRequested ? (
+                        <Btn variant="outline" className="w-full text-success border-success/30 bg-success/5" disabled>
+                          <CheckCircle className="h-4 w-4 mr-1.5" /> Requested
+                        </Btn>
+                      ) : (
+                        <Btn variant="outline" className="w-full cursor-pointer" onClick={() => { onClose(); onRequestBuy(listing); }}>
+                          <MessageSquare className="h-4 w-4 mr-1.5" /> Buy at Price
+                        </Btn>
+                      )}
+                    </div>
+                  </div>
                 ) : (
                   <Btn variant="outline" className="w-full bg-primary/5 text-primary hover:bg-primary/10 cursor-pointer" onClick={() => { onClose(); onViewResponses(listing); }}>
-                    <MessageSquare className="h-4 w-4 mr-2" /> View Responses {listing.responses && listing.responses.length > 0 && <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] leading-none">{listing.responses.length}</span>}
+                    <MessageSquare className="h-4 w-4 mr-2" /> View Requests {listing.responses && listing.responses.length > 0 && <span className="ml-1 rounded-full bg-primary/20 text-primary px-1.5 py-0.5 text-[10px] leading-none">{listing.responses.length}</span>}
                   </Btn>
                 )}
                 
@@ -577,6 +803,12 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
               <Badge variant={COND_COLOR[listing.condition]} className="text-[10px]">{listing.condition}</Badge>
               <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{listing.location}</span>
+              {listing.bidsCount !== undefined && listing.bidsCount > 0 && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                  <Gavel className="h-3 w-3" /> {listing.bidsCount} {listing.bidsCount === 1 ? 'Bid' : 'Bids'}
+                  {listing.highestBid && ` · Top ৳${listing.highestBid.toLocaleString()}`}
+                </span>
+              )}
             </div>
             {/* Seller row */}
             <div className="mt-1.5 flex items-center gap-1.5">
@@ -647,6 +879,14 @@ function ListingCard({ listing, viewMode, onToggleFav, onEdit, onClick }: {
           <Badge variant={COND_COLOR[listing.condition]} className="text-[10px]">{listing.condition}</Badge>
           <span className="flex items-center gap-1 text-[11px] text-muted-foreground"><MapPin className="h-3 w-3" />{listing.location}</span>
         </div>
+        {listing.bidsCount !== undefined && listing.bidsCount > 0 && (
+          <div className="pt-0.5">
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+              <Gavel className="h-2.5 w-2.5" /> {listing.bidsCount} {listing.bidsCount === 1 ? 'Bid' : 'Bids'}
+              {listing.highestBid && ` · Top ৳${listing.highestBid.toLocaleString()}`}
+            </span>
+          </div>
+        )}
         {/* Seller row */}
         <div className="flex items-center gap-1.5 pt-0.5 cursor-pointer" onClick={e => e.stopPropagation()}>
           <img src={listing.sellerAvatar} alt="" className="h-4 w-4 rounded-full border border-border bg-secondary" />
@@ -678,6 +918,7 @@ export default function Marketplace() {
   const [markingId, setMarkingId] = useState<string | null>(null);
   
   const [requestingListing, setRequestingListing] = useState<Listing | null>(null);
+  const [biddingListing, setBiddingListing] = useState<Listing | null>(null);
   const [viewingResponses, setViewingResponses] = useState<Listing | null>(null);
   const [reportingListing, setReportingListing] = useState<Listing | null>(null);
   
@@ -716,6 +957,57 @@ export default function Marketplace() {
       queryClient.invalidateQueries({ queryKey: ['marketplace-requests'] });
       queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
       setRequestingListing(null);
+      toast.success("Purchase request sent!");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to send request.");
+    }
+  });
+
+  const placeBidMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { amount: number; message: string; phone: string } }) =>
+      api.post(`/api/marketplace/${id}/bids`, data),
+    onSuccess: () => {
+      toast.success("Offer submitted successfully!");
+      queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+      setBiddingListing(null);
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to submit offer.");
+    }
+  });
+
+  const acceptBidMutation = useMutation({
+    mutationFn: (id: string) => api.put(`/api/marketplace/bids/${id}/accept`),
+    onSuccess: () => {
+      toast.success("Bid accepted! Listing marked as sold.");
+      queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+      if (detailListing) setDetailListing(null);
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to accept bid.");
+    }
+  });
+
+  const rejectBidMutation = useMutation({
+    mutationFn: (id: string) => api.put(`/api/marketplace/bids/${id}/reject`),
+    onSuccess: () => {
+      toast.success("Bid declined.");
+      queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to decline bid.");
+    }
+  });
+
+  const withdrawBidMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/api/marketplace/bids/${id}`),
+    onSuccess: () => {
+      toast.success("Bid withdrawn.");
+      queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to withdraw bid.");
     }
   });
 
@@ -724,6 +1016,10 @@ export default function Marketplace() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['marketplace-listings'] });
       setViewingResponses(null);
+      toast.success("Buyer accepted!");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to accept request.");
     }
   });
 
@@ -972,7 +1268,21 @@ export default function Marketplace() {
           onDelete={handleDelete}
           onRequestBuy={setRequestingListing}
           onViewResponses={setViewingResponses}
+          onPlaceBid={setBiddingListing}
+          onAcceptBid={bidId => acceptBidMutation.mutate(bidId)}
+          onRejectBid={bidId => rejectBidMutation.mutate(bidId)}
+          onWithdrawBid={bidId => withdrawBidMutation.mutate(bidId)}
           onReport={setReportingListing}
+        />
+      )}
+
+      {/* Bidding Modal */}
+      {biddingListing && (
+        <BidModal
+          listing={biddingListing}
+          onClose={() => setBiddingListing(null)}
+          onSubmit={data => placeBidMutation.mutate({ id: biddingListing.id, data })}
+          isPending={placeBidMutation.isPending}
         />
       )}
 
@@ -992,7 +1302,9 @@ export default function Marketplace() {
           listing={listings.find(l => l.id === viewingResponses.id) ?? viewingResponses}
           onClose={() => setViewingResponses(null)}
           onAccept={id => acceptMutation.mutate(id)}
-          isPending={acceptMutation.isPending}
+          onAcceptBid={bidId => acceptBidMutation.mutate(bidId)}
+          onRejectBid={bidId => rejectBidMutation.mutate(bidId)}
+          isPending={acceptMutation.isPending || acceptBidMutation.isPending || rejectBidMutation.isPending}
         />
       )}
 
