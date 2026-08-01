@@ -24,7 +24,7 @@ class LostAndFoundSeeder extends Seeder
         LostAndFoundItem::query()->delete();
 
         $mainStudent = User::where('email', 'sabbir01619@gmail.com')->first();
-        $testStudent = User::where('email', 'test.roommate@mycampus.test')->first();
+        $testStudent = User::where('email', 'tahmid@gmail.com')->first();
 
         // Pool excludes the main student so post #1 (deterministically his)
         // does not get reassigned to him by random pick below.

@@ -59,23 +59,24 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4">
-      <div className="mb-6">
-        <Logo />
-      </div>
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4 py-8">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-7 sm:p-9 shadow-lg">
+        {/* Header inside the card for cohesive visual flow */}
+        <div className="flex flex-col items-center text-center mb-6">
+          <Link to="/" className="inline-block mb-3 hover:opacity-90 transition-opacity">
+            <Logo />
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Welcome back<span className="text-primary">.</span>
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Sign in to access your campus dashboard & services.
+          </p>
+        </div>
 
-      {/* Minimal greeting — just text, no card. */}
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Welcome back<span className="text-primary">.</span>
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Sign in to your campus.</p>
-      </div>
-
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6 md:p-8 shadow-sm">
-        <form className="space-y-5" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-blood/10 p-3 text-sm text-blood border border-blood/20">
+            <div className="rounded-lg bg-blood/10 p-3 text-sm text-blood border border-blood/20 text-center font-medium">
               {error}
             </div>
           )}
@@ -90,6 +91,7 @@ export default function Login() {
               disabled={isLoading}
             />
           </Field>
+
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground">Password <span className="text-blood">*</span></span>
@@ -103,12 +105,17 @@ export default function Login() {
               disabled={isLoading}
             />
           </div>
-          <Btn type="submit" className="w-full mt-2" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign in"} <ArrowRight className="h-4 w-4" />
+
+          <Btn type="submit" className="w-full mt-2 justify-center py-2.5 text-sm font-semibold shadow-sm" disabled={isLoading}>
+            {isLoading ? "Signing in..." : "Sign in"} <ArrowRight className="h-4 w-4 ml-1.5" />
           </Btn>
-          <p className="pt-2 text-center text-xs text-muted-foreground">
-            No account? <Link to="/register" className="font-medium text-primary hover:underline cursor-pointer">Sign up</Link>
-          </p>
+
+          <div className="pt-2 text-center text-xs text-muted-foreground border-t border-border mt-5">
+            Don't have an account yet?{" "}
+            <Link to="/register" className="font-semibold text-primary hover:underline cursor-pointer">
+              Register now
+            </Link>
+          </div>
         </form>
       </div>
     </div>

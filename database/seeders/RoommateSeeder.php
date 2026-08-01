@@ -20,11 +20,11 @@ class RoommateSeeder extends Seeder
             return;
         }
 
-        // Find the dedicated test roommate author.
+        // Find the dedicated test roommate author (Tahmid).
         // We assign post 1 to this user deterministically so the main
         // student account (Sabbir) can reliably test the AI roommate
         // compatibility check against someone else's post.
-        $roommateAuthor = User::where('email', 'test.roommate@mycampus.test')->first();
+        $roommateAuthor = User::where('email', 'tahmid@gmail.com')->first();
 
         // Find the main student so we can avoid assigning posts to them
         // (so all posts remain visible for AI compatibility tests).

@@ -37,14 +37,14 @@ class StudentUserSeeder extends Seeder
         // Create profile for student
         $student->profile()->firstOrCreate();
 
-        // Second approved student so the main user (Sabbir) can test
+        // Second approved student (Tahmid) so the main user (Sabbir) can test
         // the AI Roommate compatibility feature against someone else's post.
         $roommateAuthor = User::firstOrCreate(
-            ['email' => 'test.roommate@mycampus.test'],
+            ['email' => 'tahmid@gmail.com'],
             [
-                'name' => 'Test Roommate Author',
+                'name' => 'Tahmid',
                 'password' => 'password',
-                'roll_number' => '2207200',
+                'roll_number' => '2207109',
                 'department' => 'EEE',
                 'batch' => 2022,
                 'gender' => 'male',

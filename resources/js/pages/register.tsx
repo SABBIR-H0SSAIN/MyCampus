@@ -44,21 +44,36 @@ export default function Register() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <header className="border-b border-border">
+      <header className="border-b border-border bg-surface/80 backdrop-blur-sm sticky top-0 z-30">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-          <Link to="/"><Logo /></Link>
-          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground cursor-pointer">Already verified? Sign in</Link>
+          <Link to="/" className="hover:opacity-90 transition-opacity">
+            <Logo />
+          </Link>
+          <Link 
+            to="/login" 
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          >
+            Already registered? <span className="font-semibold text-primary hover:underline">Sign in</span>
+          </Link>
         </div>
       </header>
-      <main className="mx-auto max-w-2xl px-4 py-10">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl text-foreground">
-            Join MyCampus<span className="text-primary">.</span>
-          </h1>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">For KUET students. Verified by your student ID · approved in ~24h.</p>
-        </div>
-        <form className="space-y-6 rounded-2xl border border-border bg-surface p-6 md:p-8" onSubmit={handleSubmit}>
-          <div className="grid gap-5 md:grid-cols-2">
+      <main className="mx-auto max-w-2xl px-4 py-8 sm:py-10">
+        <div className="rounded-2xl border border-border bg-surface p-6 sm:p-9 shadow-lg">
+          {/* Unified card header */}
+          <div className="text-center mb-8 pb-6 border-b border-border">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-3">
+              Student Registration
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              Join MyCampus<span className="text-primary">.</span>
+            </h1>
+            <p className="mx-auto mt-1.5 max-w-md text-sm text-muted-foreground">
+              Exclusive platform for KUETians. Verified by student ID and approved in ~24 hours.
+            </p>
+          </div>
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="grid gap-5 md:grid-cols-2">
             <Field label="Full name" required><Input name="name" placeholder="Tahmid Rahman" required disabled={isLoading} /></Field>
             <Field label="Email" required hint="Use your @stud.kuet.ac.bd email"><Input name="email" type="email" placeholder="you@stud.kuet.ac.bd" required disabled={isLoading} /></Field>
             
@@ -130,6 +145,7 @@ export default function Register() {
           </Btn>
           <p className="text-center text-xs text-muted-foreground">By registering, you'll be added to a queue. You'll be notified by email once approved.</p>
         </form>
+        </div>
       </main>
     </div>
   );
