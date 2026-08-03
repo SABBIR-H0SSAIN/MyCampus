@@ -21,7 +21,7 @@ class BloodRequestController extends Controller
                     'roll_number' => $resp->user->roll_number,
                     'phone' => $resp->user->phone ?? 'N/A',
                     'blood_group' => $resp->user->blood_group ?? 'Unknown',
-                    'avatar' => $resp->user->profile->avatar ?? "https://ui-avatars.com/api/?name=" . urlencode($resp->user->name) . "&background=random",
+                    'avatar' => $resp->user->avatar_url,
                 ];
             });
 

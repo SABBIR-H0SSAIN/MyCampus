@@ -39,7 +39,7 @@ class ExchangeController extends Controller
                     return [
                         'id' => (string) $req->id,
                         'responderName' => $reqUser->name,
-                        'responderAvatar' => $reqUser->profile->avatar_url ?? 'https://api.dicebear.com/9.x/notionists/svg?seed=' . $reqUser->id,
+                        'responderAvatar' => $reqUser->avatar_url,
                         'responderPhone' => $req->phone,
                         'message' => $req->message,
                         'status' => $req->status,

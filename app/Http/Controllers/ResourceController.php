@@ -50,7 +50,7 @@ class ResourceController extends Controller
                 'external_links' => $r->external_links ?? [],
                 'uploader' => $r->user->name,
                 'uploader_id' => $r->user->id,
-                'uploader_avatar' => $r->user->profile->avatar ?? "https://ui-avatars.com/api/?name=" . urlencode($r->user->name) . "&background=random",
+                'uploader_avatar' => $r->user->avatar_url,
                 'postedAt' => $r->created_at->diffForHumans(),
                 'selfPosted' => $r->user_id === $request->user()->id,
                 // Mocking rating/downloads since they are not tracked in DB yet

@@ -29,7 +29,7 @@ class LostAndFoundController extends Controller
                 'images' => $item->images ?? [],
                 'status' => $item->status,
                 'reporter' => $user->name,
-                'reporterAvatar' => $user->profile->avatar_url ?? 'https://api.dicebear.com/9.x/notionists/svg?seed=' . $user->id,
+                'reporterAvatar' => $user->avatar_url,
                 'reporterRoll' => $user->roll_number,
                 'department' => $departmentStr,
                 'phone' => $item->phone, // Using the phone number provided in the specific report

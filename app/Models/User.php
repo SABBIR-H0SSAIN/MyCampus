@@ -78,6 +78,25 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the user's avatar URL.
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if ($this->profile && $this->profile->avatar_path) {
+            $path = ltrim($this->profile->avatar_path, '/');
+            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                return $path;
+            }
+            if (str_starts_with($path, 'storage/')) {
+                return '/' . $path;
+            }
+            return '/storage/' . $path;
+        }
+
+        return "https://ui-avatars.com/api/?name=" . urlencode($this->name ?? 'User') . "&background=random";
+    }
+
+    /**
      * Get the admin who approved this user.
      */
     public function approvedBy(): BelongsTo

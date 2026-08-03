@@ -146,6 +146,8 @@ Route::middleware(['auth:sanctum', EnsureUserApproved::class, 'role:admin'])
         // Reports management
         Route::get('/reports', [AdminReportController::class, 'index']);
         Route::put('/reports/{id}/status', [AdminReportController::class, 'updateStatus']);
+        Route::delete('/reports/{id}/item', [AdminReportController::class, 'removeItem']);
+        Route::post('/reports/{id}/remove-item', [AdminReportController::class, 'removeItem']);
         Route::delete('/reports/{id}', [AdminReportController::class, 'destroy']);
     });
 

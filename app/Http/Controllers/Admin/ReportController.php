@@ -22,12 +22,51 @@ class ReportController extends Controller
         $reports = $query->paginate(20)->through(function ($report) {
             $itemTitle = 'Unknown';
             $itemType = class_basename($report->reportable_type);
+            $itemUrl = null;
+            $itemAuthor = null;
+            $itemExists = false;
+            $itemId = $report->reportable_id;
 
             if ($report->reportable) {
-                if ($itemType === 'ExchangePost') {
-                    $itemTitle = $report->reportable->offering ?? 'Unknown';
-                } else {
-                    $itemTitle = $report->reportable->title ?? 'Unknown';
+                $itemExists = true;
+                $target = $report->reportable;
+
+                if (isset($target->user) && $target->user) {
+                    $itemAuthor = $target->user->name;
+                }
+
+                switch ($itemType) {
+                    case 'MarketplaceListing':
+                        $itemTitle = $target->title ?? ('Listing #' . $target->id);
+                        $itemUrl = '/app/marketplace?open=' . $target->id;
+                        break;
+                    case 'ExchangePost':
+                        $itemTitle = ($target->offering ? $target->offering . ' ↔ ' . $target->desire : 'Exchange #' . $target->id);
+                        $itemUrl = '/app/exchange?open=' . $target->id;
+                        break;
+                    case 'Resource':
+                        $itemTitle = $target->title ?? ('Resource #' . $target->id);
+                        $itemUrl = '/app/resources?open=' . $target->id;
+                        break;
+                    case 'RoommatePost':
+                        $itemTitle = $target->title ?? ('Roommate Post #' . $target->id);
+                        $itemUrl = '/app/roommates?open=' . $target->id;
+                        break;
+                    case 'LostAndFoundItem':
+                        $itemTitle = $target->title ?? ('Lost & Found #' . $target->id);
+                        $itemUrl = '/app/lost-found?open=' . $target->id;
+                        break;
+                    case 'BloodRequest':
+                        $itemTitle = ($target->blood_group ? $target->blood_group . ' blood at ' . $target->hospital : 'Blood Request #' . $target->id);
+                        $itemUrl = '/app/blood?open=' . $target->id;
+                        break;
+                    case 'User':
+                        $itemTitle = $target->name ?? 'User Profile';
+                        $itemUrl = '/app/profile/' . ($target->roll_number ?? $target->id);
+                        break;
+                    default:
+                        $itemTitle = $target->title ?? $target->name ?? ('Item #' . $target->id);
+                        break;
                 }
             }
 
@@ -41,8 +80,12 @@ class ReportController extends Controller
                     'name' => $report->user ? $report->user->name : 'Unknown User',
                 ],
                 'item' => [
+                    'id' => $itemId,
                     'type' => $itemType,
                     'title' => $itemTitle,
+                    'url' => $itemUrl,
+                    'author' => $itemAuthor,
+                    'exists' => $itemExists,
                 ]
             ];
         });
@@ -63,6 +106,22 @@ class ReportController extends Controller
         return response()->json(['message' => 'Report status updated successfully.']);
     }
 
+    public function removeItem($id): JsonResponse
+    {
+        $report = Report::findOrFail($id);
+
+        if ($report->reportable) {
+            $report->reportable->delete();
+        }
+
+        $report->status = 'resolved';
+        $report->save();
+
+        return response()->json([
+            'message' => 'Reported content has been permanently removed and report marked as resolved.'
+        ]);
+    }
+
     public function destroy($id): JsonResponse
     {
         $report = Report::findOrFail($id);
@@ -71,3 +130,4 @@ class ReportController extends Controller
         return response()->json(['message' => 'Report deleted successfully.']);
     }
 }
+

@@ -46,7 +46,22 @@ class Profile extends Model
      */
     public function getAvatarAttribute(): ?string
     {
-        return $this->avatar_path ? asset('storage/' . $this->avatar_path) : null;
+        if ($this->avatar_path) {
+            $path = ltrim($this->avatar_path, '/');
+            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                return $path;
+            }
+            if (str_starts_with($path, 'storage/')) {
+                return '/' . $path;
+            }
+            return '/storage/' . $path;
+        }
+
+        if ($this->relationLoaded('user') && $this->user) {
+            return "https://ui-avatars.com/api/?name=" . urlencode($this->user->name) . "&background=random";
+        }
+
+        return null;
     }
 
     /**
@@ -54,7 +69,7 @@ class Profile extends Model
      */
     public function getAvatarUrlAttribute(): ?string
     {
-        return $this->avatar_path ? asset('storage/' . $this->avatar_path) : null;
+        return $this->getAvatarAttribute();
     }
 
     /**
