@@ -92,7 +92,7 @@ function ResponsesModal({ post, onClose, onAccept, isPending }: { post: Exchange
               <div key={res.id} className="rounded-xl border border-border bg-surface p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <img src={res.responderAvatar} alt="" className="h-10 w-10 rounded-full bg-secondary" />
+                    <img src={res.responderAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(res.responderName || "Student")}&background=random`} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
                     <div>
                       <p className="font-medium text-sm">{res.responderName}</p>
                       <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {res.date}</p>

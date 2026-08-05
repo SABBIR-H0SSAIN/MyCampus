@@ -71,11 +71,13 @@ export function LogoMark({ className }: { className?: string }) {
 export function Logo({ 
   className, 
   mark = false,
-  size = "md"
+  size = "md",
+  textClassName
 }: { 
   className?: string; 
   mark?: boolean;
   size?: "sm" | "md" | "lg";
+  textClassName?: string;
 }) {
   const sizes = {
     sm: {
@@ -101,7 +103,7 @@ export function Logo({
     <div className={cn("inline-flex items-center select-none font-display", activeSize.container, className)}>
       <LogoMark className={activeSize.icon} />
       {!mark && (
-        <span className={cn("font-bold text-foreground inline-flex items-center", activeSize.text)}>
+        <span className={cn("font-bold text-foreground inline-flex items-center", activeSize.text, textClassName)}>
           <span>My</span>
           <span className="text-primary">Campus</span>
         </span>

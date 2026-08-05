@@ -57,7 +57,7 @@ export function AdminLayout() {
     <div className="min-h-dvh bg-sidebar text-sidebar-foreground">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
         <div className="flex h-16 items-center gap-2 px-5 border-b border-sidebar-border">
-          <Logo size="md" />
+          <Logo size="md" textClassName="text-white" />
           <span className="rounded bg-sidebar-accent px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-widest text-sidebar-primary shrink-0">Admin</span>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">

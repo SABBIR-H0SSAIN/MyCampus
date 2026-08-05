@@ -351,7 +351,7 @@ export default function RoommateFinder() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <Link to={`/app/profile/${post.user?.roll_number || post.user?.id}`} onClick={e => e.stopPropagation()} className="shrink-0 hover:opacity-80 transition-opacity">
-                      <img src={post.user?.profile?.avatar_url || `https://ui-avatars.com/api/?name=${post.user?.name}&background=random`} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
+                      <img src={post.user?.profile?.avatar_url || (post.user?.profile?.avatar_path ? `/storage/${post.user.profile.avatar_path}` : null) || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user?.name || "Student")}&background=random`} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
                     </Link>
                     <div>
                       <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors" title={post.title}>{post.title}</h3>
@@ -633,7 +633,7 @@ export default function RoommateFinder() {
                 
                 <div className="bg-secondary/30 p-4 rounded-lg flex flex-col items-center justify-center text-center">
                   <Link to={`/app/profile/${viewingDetails.user?.roll_number || viewingDetails.user?.id}`} className="hover:opacity-80 transition-opacity">
-                    <img src={viewingDetails.user?.profile?.avatar_url || `https://ui-avatars.com/api/?name=${viewingDetails.user?.name}&background=random`} alt="" className="h-16 w-16 rounded-full bg-secondary object-cover mb-2" />
+                    <img src={viewingDetails.user?.profile?.avatar_url || (viewingDetails.user?.profile?.avatar_path ? `/storage/${viewingDetails.user.profile.avatar_path}` : null) || `https://ui-avatars.com/api/?name=${encodeURIComponent(viewingDetails.user?.name || "Student")}&background=random`} alt="" className="h-16 w-16 rounded-full bg-secondary object-cover mb-2" />
                   </Link>
                   <Link to={`/app/profile/${viewingDetails.user?.roll_number || viewingDetails.user?.id}`} className="font-semibold text-foreground hover:underline">
                     {viewingDetails.user?.name}
@@ -1051,7 +1051,7 @@ function ResponsesModal({ post, onClose, onRespond }: { post: RoommatePost, onCl
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <Link to={`/app/profile/${req.requester?.roll_number || req.requester?.id}`} className="shrink-0 hover:opacity-80 transition-opacity">
-                        <img src={req.requester?.profile?.avatar_url || `https://ui-avatars.com/api/?name=${req.requester?.name}&background=random`} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
+                        <img src={req.requester?.profile?.avatar_url || (req.requester?.profile?.avatar_path ? `/storage/${req.requester.profile.avatar_path}` : null) || `https://ui-avatars.com/api/?name=${encodeURIComponent(req.requester?.name || "Student")}&background=random`} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
                       </Link>
                       <div>
                         <Link to={`/app/profile/${req.requester?.roll_number || req.requester?.id}`} className="text-sm font-semibold text-foreground hover:underline">

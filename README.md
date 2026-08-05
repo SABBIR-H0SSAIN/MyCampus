@@ -3,7 +3,7 @@
   <p><strong>A Comprehensive Smart Campus Management & Student Collaboration Platform</strong></p>
 
   <p>
-    <img src="https://img.shields.io/badge/Laravel-11.x-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel 11" />
+    <img src="https://img.shields.io/badge/Laravel-13.x-FF2D20?style=flat-square&logo=laravel&logoColor=white" alt="Laravel 13" />
     <img src="https://img.shields.io/badge/React-18.x-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 18" />
     <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
     <img src="https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
@@ -38,14 +38,44 @@
 
 | Domain | Technologies |
 | :--- | :--- |
-| **Backend** | Laravel 11, PHP 8.2+, Laravel Sanctum (API Token Auth) |
+| **Backend** | Laravel 13, PHP 8.3+, Laravel Sanctum (API Token Auth) |
 | **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Lucide Icons |
 | **AI Integration** | Google Gemini API (SSE Streaming Chatbot, Database Indexing & AI Compatibility Scoring) |
-| **Mapping & Geocoding** | OpenStreetMap (Nominatim API), Leaflet (`react-leaflet`), CARTO Voyager |
-| **State & Data** | TanStack Query (React Query v5) |
-| **Database** | MySQL (SQLite supported for automated testing) |
+| **Mapping & Geolocation** | OpenStreetMap (Nominatim API), Leaflet (`react-leaflet`), CARTO Voyager |
+| **Database** | MySQL |
 
 ---
+
+## Screenshots
+
+| Student Registration | Student Login |
+| :---: | :---: |
+| ![Student Registration](screenshots/student_regestration_form.png) | ![Student Login](screenshots/student_login_form.png) |
+| **Student Dashboard** | **Student Profile** |
+| ![Student Dashboard](screenshots/student_dashboard_page.png) | ![Student Profile](screenshots/student_profile_page.png) |
+| **Global Search** | **Interactive Campus Map** |
+| ![Global Search](screenshots/global_search_features.png) | ![Interactive Campus Map](screenshots/interactive_campus_map.png) |
+| **MyCampus AI Assistant** | **AI Roommate Compatibility** |
+| ![MyCampus AI Assistant](screenshots/mycampus_ai_assistant.png) | ![AI Compatibility Check](screenshots/ai_roommate_compatibility_check.png) |
+| **Marketplace Listings** | **Marketplace Ad Details** |
+| ![Marketplace Listings](screenshots/marketplace_listing_page.png) | ![Marketplace Ad Details](screenshots/marketplace_ad_details_modal.png) |
+| **Live Bidding Form** | **Bid Responses & Offers** |
+| ![Place Bids](screenshots/marketplace_bids_form_modal.png) | ![Bid Responses List](screenshots/marketplace_bid_responses_list_modal.png) |
+| **Item Exchanges** | **Exchange Responses** |
+| ![Exchanges Page](screenshots/exchanges_page.png) | ![Exchange Responses Modal](screenshots/exchange_responss_modal.png) |
+| **Roommates Finder** | **Academic Resources Hub** |
+| ![Roommates Finder](screenshots/roommates_finder_page.png) | ![Academic Resources](screenshots/academic_resources_page.png) |
+| **Lost & Found Portal** | **Emergency Blood Network** |
+| ![Lost and Found Hub](screenshots/lost_and_found_hub_page.png) | ![Blood Donations](screenshots/blood_donations_page.png) |
+| **Campus Announcements** | **Admin Dashboard** |
+| ![Announcements Page](screenshots/announcements_page.png) | ![Admin Dashboard](screenshots/admin_dashboard_page.png) |
+| **Student ID Verification Queue** | **User Management** |
+| ![Student ID Approval](screenshots/admin_regestration_approval_page.png) | ![User Management](screenshots/admin_users_managements_page.png) |
+| **Reports Moderation** | **Broadcast Announcements** |
+| ![Reports Moderation](screenshots/admin_reports_moderation_page.png) | ![Admin Announcements](screenshots/admin_announcements_page.png) |
+| **Admin AI Intelligence Summary** | |
+| ![AI Admin Summary](screenshots/ai_admin_summary.png) | |
+
 
 ## Getting Started
 
@@ -54,7 +84,7 @@ Follow these instructions to set up the project locally on your machine.
 ### Prerequisites
 
 Ensure you have the following installed:
-- **PHP** (>= 8.2)
+- **PHP** (>= 8.3)
 - **Composer**
 - **Node.js** (>= 18) and **pnpm** (or npm)
 

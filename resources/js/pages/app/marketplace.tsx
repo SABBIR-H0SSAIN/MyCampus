@@ -251,7 +251,7 @@ function ResponsesModal({
                 <div key={res.id} className="border border-border rounded-xl p-4 bg-background">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
-                      <img src={res.responderAvatar} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
+                      <img src={res.responderAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(res.responderName || "Student")}&background=random`} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
                       <div>
                         <p className="font-semibold text-sm">{res.responderName}</p>
                         <p className="text-xs text-muted-foreground">{res.date}</p>
@@ -282,7 +282,7 @@ function ResponsesModal({
                 )}>
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-3">
-                      <img src={bid.bidderAvatar} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
+                      <img src={bid.bidderAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(bid.bidderName || "Student")}&background=random`} alt="" className="h-10 w-10 rounded-full bg-secondary object-cover" />
                       <div>
                         <p className="font-semibold text-sm flex items-center gap-1.5">
                           {bid.bidderName} <span className="text-xs text-muted-foreground font-normal">({bid.bidderDepartment})</span>

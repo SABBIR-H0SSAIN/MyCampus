@@ -154,7 +154,7 @@ function ResponsesModal({ item, onClose }: { item: BloodRequestItem, onClose: ()
             item.responses.map(resp => (
               <div key={resp.id} className="flex flex-col gap-3 rounded-xl border border-border bg-secondary/30 p-3">
                 <div className="flex items-center gap-3">
-                  <img src={resp.avatar} alt="" className="h-10 w-10 rounded-full border-2 border-border object-cover" />
+                  <img src={resp.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(resp.name || "Donor")}&background=random`} alt="" className="h-10 w-10 rounded-full border-2 border-border object-cover" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold flex items-center gap-1.5">
                       {resp.name}

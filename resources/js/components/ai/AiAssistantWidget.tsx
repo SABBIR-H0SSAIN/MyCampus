@@ -1,6 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Sparkles, Send, X, Bot, User, Trash2, ArrowRight, CornerDownLeft } from "lucide-react";
+import {
+  Sparkles,
+  Send,
+  X,
+  Bot,
+  User,
+  Trash2,
+  ArrowUpRight,
+  BookOpen,
+  Home,
+  ShoppingBag,
+  Droplet,
+  Search,
+  CheckCircle2,
+  HelpCircle,
+  CornerDownLeft,
+  Flame,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -10,11 +27,33 @@ interface Message {
   timestamp: string;
 }
 
-const QUICK_PROMPTS = [
-  "Search CSE220 lecture notes",
-  "Roommates under 6000 BDT",
-  "Any urgent O+ blood requests?",
-  "Calculators or books for sale",
+interface QuickPrompt {
+  icon: React.ReactNode;
+  label: string;
+  query: string;
+}
+
+const QUICK_PROMPTS: QuickPrompt[] = [
+  {
+    icon: <BookOpen className="h-3 w-3 text-sky-500" />,
+    label: "CSE220 Notes",
+    query: "Search CSE220 lecture notes and slides",
+  },
+  {
+    icon: <Home className="h-3 w-3 text-emerald-500" />,
+    label: "Roommates < 5K",
+    query: "Find available roommates under 5000 BDT",
+  },
+  {
+    icon: <Droplet className="h-3 w-3 text-rose-500" />,
+    label: "Urgent Blood",
+    query: "Any urgent O+ or A+ blood requests?",
+  },
+  {
+    icon: <ShoppingBag className="h-3 w-3 text-amber-500" />,
+    label: "Study Table / Tech",
+    query: "Show study table, keyboard, or calculators for sale",
+  },
 ];
 
 export function AiAssistantWidget() {
@@ -25,12 +64,13 @@ export function AiAssistantWidget() {
     {
       id: "welcome-1",
       role: "assistant",
-      text: "Hello! I am **MyCampus AI Assistant**. Ask me anything about roommates, marketplace listings, emergency blood requests, academic notes, or lost items!",
+      text: "👋 Hi! I am your **MyCampus Assistant**.\n\nAsk me anything about **roommates**, **marketplace items**, **emergency blood requests**, **lecture notes**, or **lost & found** records across campus!",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -38,6 +78,13 @@ export function AiAssistantWidget() {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, open]);
+
+  // Focus input on open
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 150);
+    }
+  }, [open]);
 
   const handleSend = async (textToSend?: string) => {
     const query = (textToSend || input).trim();
@@ -120,7 +167,7 @@ export function AiAssistantWidget() {
           msg.id === assistantId
             ? {
                 ...msg,
-                text: "I encountered an error fetching active campus records. Please try again.",
+                text: "⚠️ I encountered an issue connecting to the campus assistant service. Please check your connection and try again.",
               }
             : msg
         )
@@ -135,7 +182,7 @@ export function AiAssistantWidget() {
       {
         id: "welcome-reset",
         role: "assistant",
-        text: "Chat cleared! How else can I help you across campus today?",
+        text: "✨ Conversation cleared! How can I assist you with your campus queries today?",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       },
     ]);
@@ -147,48 +194,50 @@ export function AiAssistantWidget() {
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          "fixed z-40 flex h-13 w-13 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer",
+          "fixed z-40 flex items-center gap-2.5 rounded-full shadow-2xl transition-all duration-300 active:scale-95 cursor-pointer",
           open
-            ? "bottom-24 right-6 lg:bottom-8 lg:right-8 ring-4 ring-primary/20"
-            : "bottom-20 right-5 lg:bottom-6 lg:right-8"
+            ? "bottom-24 right-6 lg:bottom-8 lg:right-8 bg-primary text-primary-foreground p-3.5 ring-4 ring-primary/20"
+            : "bottom-20 right-5 lg:bottom-6 lg:right-8 bg-gradient-to-r from-primary via-primary/90 to-primary text-primary-foreground px-4 py-3 hover:shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5"
         )}
         aria-label="Toggle AI Assistant"
         type="button"
       >
         <div className="relative flex items-center justify-center">
-          <Sparkles className="h-6 w-6 animate-pulse" />
-          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+          <Sparkles className="h-5 w-5 animate-pulse" />
+          <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
         </div>
+        {!open && (
+          <span className="text-xs font-semibold tracking-tight pr-0.5 hidden sm:inline-block">
+            Ask Campus AI
+          </span>
+        )}
       </button>
 
       {/* Floating Chat Window Drawer */}
       {open && (
-        <div className="fixed bottom-36 right-4 z-50 flex h-[520px] w-96 max-w-[calc(100vw-2rem)] flex-col rounded-2xl border border-border bg-surface shadow-2xl backdrop-blur-2xl transition-all duration-300 lg:bottom-22 lg:right-8 animate-in fade-in slide-in-from-bottom-4">
+        <div className="fixed bottom-36 right-4 z-50 flex h-[560px] w-[410px] max-w-[calc(100vw-2rem)] flex-col rounded-2xl border border-border/80 bg-surface/95 shadow-2xl backdrop-blur-2xl transition-all duration-300 lg:bottom-22 lg:right-8 animate-in fade-in slide-in-from-bottom-5 overflow-hidden">
           {/* Top Bar / Header */}
-          <div className="flex items-center justify-between border-b border-border bg-surface-2/60 px-4 py-3 backdrop-blur-md">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Bot className="h-4.5 w-4.5" />
+          <div className="flex items-center justify-between border-b border-border/70 bg-surface-2/70 px-4 py-3.5 backdrop-blur-md">
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/20 text-primary shadow-xs">
+                <Bot className="h-5 w-5" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-emerald-500"></span>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-bold tracking-tight text-foreground">MyCampus AI</span>
-                  <span className="rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[9px] font-bold text-primary">RAG</span>
-                </div>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                  Grounded Campus Database
-                </div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xs font-bold tracking-tight text-foreground">MyCampus Assistant</h3>
+                <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  Online
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={handleClear}
                 className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
-                title="Clear chat"
+                title="Clear conversation"
                 type="button"
               >
                 <Trash2 className="h-4 w-4" />
@@ -196,6 +245,7 @@ export function AiAssistantWidget() {
               <button
                 onClick={() => setOpen(false)}
                 className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors cursor-pointer"
+                title="Close chat"
                 type="button"
               >
                 <X className="h-4 w-4" />
@@ -204,53 +254,55 @@ export function AiAssistantWidget() {
           </div>
 
           {/* Quick Suggestions Bar */}
-          <div className="flex items-center gap-1.5 overflow-x-auto border-b border-border/60 bg-background/50 px-3 py-2 text-[11px] scrollbar-hide">
-            {QUICK_PROMPTS.map((prompt, i) => (
+          <div className="flex items-center gap-1.5 overflow-x-auto border-b border-border/50 bg-muted/20 px-3 py-2 text-[11px] scrollbar-hide">
+            {QUICK_PROMPTS.map((item, i) => (
               <button
                 key={i}
-                onClick={() => handleSend(prompt)}
+                onClick={() => handleSend(item.query)}
                 disabled={loading}
-                className="shrink-0 rounded-full border border-border bg-surface px-2.5 py-1 text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary cursor-pointer"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/80 bg-surface px-2.5 py-1 text-[11px] font-medium text-foreground/80 shadow-2xs transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-95 disabled:opacity-50 cursor-pointer"
                 type="button"
               >
-                {prompt}
+                {item.icon}
+                <span>{item.label}</span>
               </button>
             ))}
           </div>
 
           {/* Chat Messages Feed */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs scroll-smooth">
             {messages.map((m) => (
               <div
                 key={m.id}
                 className={cn("flex gap-2.5", m.role === "user" ? "justify-end" : "justify-start")}
               >
                 {m.role === "assistant" && (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary mt-0.5">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 text-primary mt-0.5">
                     <Bot className="h-4 w-4" />
                   </div>
                 )}
-                <div className="max-w-[82%] space-y-1">
+                <div className="max-w-[85%] space-y-1">
                   <div
                     className={cn(
-                      "rounded-2xl px-3.5 py-2.5 leading-relaxed shadow-sm",
+                      "rounded-2xl px-4 py-3 leading-relaxed shadow-xs text-xs",
                       m.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-tr-xs"
-                        : "bg-surface-2 border border-border text-foreground rounded-tl-xs"
+                        ? "bg-primary text-primary-foreground font-medium rounded-tr-xs shadow-primary/10"
+                        : "bg-surface-2 border border-border/80 text-foreground rounded-tl-xs shadow-2xs"
                     )}
                   >
                     {renderFormattedText(m.text)}
                     {m.text === "" && loading && (
-                      <span className="inline-flex items-center gap-1 text-muted-foreground font-mono">
-                        <span className="animate-bounce">.</span>
-                        <span className="animate-bounce [animation-delay:0.2s]">.</span>
-                        <span className="animate-bounce [animation-delay:0.4s]">.</span>
-                      </span>
+                      <div className="flex items-center gap-1.5 py-1 text-muted-foreground font-medium">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"></span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.2s]"></span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.4s]"></span>
+                        <span className="ml-1 text-[11px] text-muted-foreground">Searching campus database...</span>
+                      </div>
                     )}
                   </div>
                   <div
                     className={cn(
-                      "px-1 font-mono text-[9px] text-muted-foreground/60",
+                      "px-1 font-mono text-[9px] text-muted-foreground/60 tracking-tight",
                       m.role === "user" ? "text-right" : "text-left"
                     )}
                   >
@@ -258,7 +310,7 @@ export function AiAssistantWidget() {
                   </div>
                 </div>
                 {m.role === "user" && (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground mt-0.5">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted border border-border text-foreground mt-0.5">
                     <User className="h-4 w-4" />
                   </div>
                 )}
@@ -268,7 +320,7 @@ export function AiAssistantWidget() {
           </div>
 
           {/* Bottom Input Area */}
-          <div className="border-t border-border bg-surface-2/40 p-3">
+          <div className="border-t border-border/80 bg-surface-2/60 p-3 backdrop-blur-md">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -276,22 +328,32 @@ export function AiAssistantWidget() {
               }}
               className="flex items-center gap-2"
             >
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about roommates, items, blood, notes..."
-                disabled={loading}
-                className="flex-1 rounded-xl border border-border bg-background px-3.5 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition"
-              />
+              <div className="relative flex-1">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask about roommates, marketplace, blood..."
+                  disabled={loading}
+                  className="w-full rounded-xl border border-border/90 bg-background/90 px-3.5 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition shadow-2xs"
+                />
+              </div>
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
-                className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground transition hover:opacity-90 active:scale-95 disabled:opacity-50 cursor-pointer"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-all hover:opacity-95 hover:shadow-md active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                title="Send message"
               >
                 <Send className="h-4 w-4" />
               </button>
             </form>
+            <div className="mt-1.5 flex items-center justify-between px-1 text-[10px] text-muted-foreground/70">
+              <span>Press <kbd className="rounded bg-muted px-1 py-0.2 font-mono text-[9px] border border-border">Enter ↵</kbd> to send</span>
+              <span className="flex items-center gap-1">
+                <Sparkles className="h-2.5 w-2.5 text-primary" /> Powered by Campus Intelligence
+              </span>
+            </div>
           </div>
         </div>
       )}
@@ -300,88 +362,139 @@ export function AiAssistantWidget() {
 }
 
 /**
- * Format text and convert DB record tokens like [MARKETPLACE #34] or **MARKETPLACE #34 ** into direct clickable links
+ * Format text and convert DB record tokens like [MARKETPLACE #34] or **MARKETPLACE #34 ** into direct interactive cards
  */
 function renderFormattedText(text: string) {
   if (!text) return null;
 
-  // Flexible pattern to match [MARKETPLACE #34], **MARKETPLACE #34 **, MARKETPLACE #34, etc.
+  // Pattern to match entity tags like [MARKETPLACE #34], **MARKETPLACE #34**, ROOMMATE #12, etc.
   const pattern = /(?:\*\*|\[)?\b(ROOMMATE|MARKETPLACE|BLOOD_REQUEST|RESOURCE|EXCHANGE|LOST_FOUND)\s*#(\d+)\b(?:\s*\*+)?(?:\s*\])?/gi;
 
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
+  const paragraphs = text.split("\n");
 
-  while ((match = pattern.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(parseMarkdownChunk(text.substring(lastIndex, match.index), `txt-${lastIndex}`));
-    }
+  return (
+    <div className="space-y-2">
+      {paragraphs.map((para, pIdx) => {
+        if (!para.trim()) return null;
 
-    const type = match[1].toUpperCase();
-    const id = match[2];
+        // Check if paragraph is a bullet point
+        const isBullet = para.trim().startsWith("- ") || para.trim().startsWith("* ");
+        const cleanPara = isBullet ? para.trim().substring(2) : para;
 
-    let route = "/app";
-    let label = `${type.replace("_", " ")} #${id}`;
+        const parts: React.ReactNode[] = [];
+        let lastIndex = 0;
+        let match: RegExpExecArray | null;
 
-    switch (type) {
-      case "ROOMMATE":
-        route = `/app/roommates?open=${id}`;
-        label = `Roommate #${id}`;
-        break;
-      case "MARKETPLACE":
-        route = `/app/marketplace?open=${id}`;
-        label = `Listing #${id}`;
-        break;
-      case "BLOOD_REQUEST":
-        route = `/app/blood?open=${id}`;
-        label = `Blood Request #${id}`;
-        break;
-      case "RESOURCE":
-        route = `/app/resources?open=${id}`;
-        label = `Resource #${id}`;
-        break;
-      case "EXCHANGE":
-        route = `/app/exchange?open=${id}`;
-        label = `Swap Post #${id}`;
-        break;
-      case "LOST_FOUND":
-        route = `/app/lost-found?open=${id}`;
-        label = `Lost & Found #${id}`;
-        break;
-    }
+        while ((match = pattern.exec(cleanPara)) !== null) {
+          if (match.index > lastIndex) {
+            parts.push(parseMarkdownChunk(cleanPara.substring(lastIndex, match.index), `txt-${pIdx}-${lastIndex}`));
+          }
 
-    parts.push(
-      <Link
-        key={`${type}-${id}-${match.index}`}
-        to={route}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-[11px] font-bold text-primary hover:bg-primary/20 hover:border-primary/30 transition cursor-pointer my-0.5"
-      >
-        View {label} <ArrowRight className="h-3 w-3" />
-      </Link>
-    );
+          const type = match[1].toUpperCase();
+          const id = match[2];
 
-    lastIndex = pattern.lastIndex;
-  }
+          let route = "/app";
+          let label = `${type.replace("_", " ")} #${id}`;
+          let chipColor = "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20";
 
-  if (lastIndex < text.length) {
-    parts.push(parseMarkdownChunk(text.substring(lastIndex), `txt-${lastIndex}`));
-  }
+          switch (type) {
+            case "ROOMMATE":
+              route = `/app/roommates?open=${id}`;
+              label = `Roommate Listing #${id}`;
+              chipColor = "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20";
+              break;
+            case "MARKETPLACE":
+              route = `/app/marketplace?open=${id}`;
+              label = `Marketplace #${id}`;
+              chipColor = "bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20";
+              break;
+            case "BLOOD_REQUEST":
+              route = `/app/blood?open=${id}`;
+              label = `Blood Request #${id}`;
+              chipColor = "bg-rose-500/10 border-rose-500/20 text-rose-700 dark:text-rose-400 hover:bg-rose-500/20";
+              break;
+            case "RESOURCE":
+              route = `/app/resources?open=${id}`;
+              label = `Academic File #${id}`;
+              chipColor = "bg-sky-500/10 border-sky-500/20 text-sky-700 dark:text-sky-400 hover:bg-sky-500/20";
+              break;
+            case "EXCHANGE":
+              route = `/app/exchange?open=${id}`;
+              label = `Swap Post #${id}`;
+              chipColor = "bg-indigo-500/10 border-indigo-500/20 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-500/20";
+              break;
+            case "LOST_FOUND":
+              route = `/app/lost-found?open=${id}`;
+              label = `Lost Item #${id}`;
+              chipColor = "bg-purple-500/10 border-purple-500/20 text-purple-700 dark:text-purple-400 hover:bg-purple-500/20";
+              break;
+          }
 
-  return <span className="whitespace-pre-wrap leading-relaxed">{parts}</span>;
+          parts.push(
+            <Link
+              key={`${type}-${id}-${match.index}`}
+              to={route}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 font-mono text-[10.5px] font-semibold transition-colors cursor-pointer mx-1 my-0.5 align-middle shadow-2xs",
+                chipColor
+              )}
+            >
+              <span>{label}</span>
+              <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          );
+
+          lastIndex = pattern.lastIndex;
+        }
+
+        if (lastIndex < cleanPara.length) {
+          parts.push(parseMarkdownChunk(cleanPara.substring(lastIndex), `txt-${pIdx}-${lastIndex}`));
+        }
+
+        if (isBullet) {
+          return (
+            <div key={pIdx} className="flex items-start gap-2 pl-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary/70 mt-1.5 shrink-0"></span>
+              <div className="flex-1 leading-relaxed">{parts}</div>
+            </div>
+          );
+        }
+
+        return (
+          <p key={pIdx} className="leading-relaxed">
+            {parts}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 /**
- * Basic inline markdown text chunk helper (strips excessive markdown artifacts)
+ * Inline markdown text chunk helper (handles bold, code, and emphasis)
  */
 function parseMarkdownChunk(chunk: string, keyPrefix: string): React.ReactNode {
   if (!chunk) return null;
-  // Replace bold syntax **text** with clean bolding
-  const parts = chunk.split(/(\*\*[^*]+\*\*)/g);
+  const parts = chunk.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
   return (
     <React.Fragment key={keyPrefix}>
       {parts.map((p, idx) => {
         if (p.startsWith("**") && p.endsWith("**")) {
-          return <strong key={`${keyPrefix}-${idx}`} className="font-semibold text-foreground">{p.slice(2, -2)}</strong>;
+          return (
+            <strong key={`${keyPrefix}-${idx}`} className="font-semibold text-foreground">
+              {p.slice(2, -2)}
+            </strong>
+          );
+        }
+        if (p.startsWith("`") && p.endsWith("`")) {
+          return (
+            <code
+              key={`${keyPrefix}-${idx}`}
+              className="rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-foreground border border-border"
+            >
+              {p.slice(1, -1)}
+            </code>
+          );
         }
         return p;
       })}
@@ -389,7 +502,3 @@ function parseMarkdownChunk(chunk: string, keyPrefix: string): React.ReactNode {
   );
 }
 
-function getCsrfToken(): string {
-  const match = document.cookie.match(new RegExp("(^| )XSRF-TOKEN=([^;]+)"));
-  return match ? decodeURIComponent(match[2]) : "";
-}
